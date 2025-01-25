@@ -22,19 +22,19 @@
 ### **Backend**
 
 - **Backend Framework**:  
-  The backend is built using **Django**, a high-level Python framework that promotes rapid development and clean, pragmatic design. It manages the application’s server-side logic, handles user data, and serves the API endpoints that the frontend communicates with.
+  The backend is built using **Fastapi**, a high-level Python framework that promotes rapid development and clean, pragmatic design. It manages the application’s server-side logic, handles user data, and serves the API endpoints that the frontend communicates with.
 
 - **Database**:  
   **PostgreSQL** is used as the relational database management system (RDBMS) to store user data, app content, and interaction logs.
 
 - **API & Data Management**:  
-  The backend uses Django's **REST Framework** to build the API endpoints for the frontend. The system manages authentication, data retrieval, and processing of speech-to-text and text-to-sign operations.
+  The backend uses Fastapi's **REST Framework** to build the API endpoints for the frontend. The system manages authentication, data retrieval, and processing of speech-to-text and text-to-sign operations.
 
 - **Machine Learning**:  
   Python is used for the development of the **Speech-to-Text** and **Text-to-Sign** models. These models are built using state-of-the-art **Natural Language Processing (NLP)** techniques and **Deep Learning** to enable real-time speech recognition and sign language generation in Bahasa Isyarat Indonesia (BISINDO).
 
 - **Model Integration**:  
-  The trained machine learning models are integrated into the backend using **Flask** for smooth communication between the AI models and the Django backend. 
+  The trained machine learning models are integrated into the backend using **Flask** for smooth communication between the AI models and the Fastapi backend. 
 
 ### **Technologies Used**
 
