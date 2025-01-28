@@ -1,0 +1,42 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env/
+
+# Database files (jika menggunakan SQLite misalnya)
+*.db
+
+# Alembic versions (apabila ingin mengabaikan file sementara migrasi)
+migrations/versions/*
+
+# IDE files (VSCode, PyCharm, dll)
+.vscode/
+.idea/
+
+# .env file untuk konfigurasi sensitif
+.env
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Coverage reports
+.coverage
+*.coveragerc
+
+# MyPy configuration file
+.mypy_cache/
+
+# Pylint configuration file
+.pylint.d/
+
+# Docker file (jika ada)
+Dockerfile
+
+# Other build artifacts
+*.egg
+*.egg-info
+dist/
+build/
