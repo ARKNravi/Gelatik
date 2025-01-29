@@ -1,6 +1,7 @@
 from app.repositories.user_repository import UserRepository
 from app.api.v1.schemas.user_schemas import UserProfileUpdate
 from fastapi import HTTPException, status
+from app.core.exceptions import InvalidPasswordError
 
 class UserService:
     def __init__(self, user_repository: UserRepository):
@@ -29,4 +30,25 @@ class UserService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update profile"
+            )
+
+    def delete_user(self, user_id: int, password: str) -> bool:
+        """Delete a user account after verifying their password"""
+        user = self.user_repository.get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        try:
+            return self.user_repository.delete_user(user, password)
+        except InvalidPasswordError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid password"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to delete user account"
             )

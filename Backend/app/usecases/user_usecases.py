@@ -17,3 +17,9 @@ class UserUseCases:
         Update user profile information
         """
         return self.user_service.update_user_profile(user_id, profile_update)
+
+    def delete_user(self, user_id: int, password: str) -> bool:
+        """
+        Delete user account after verifying password
+        """
+        return self.user_service.delete_user(user_id, password)

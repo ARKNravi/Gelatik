@@ -1,0 +1,3 @@
+"""
+Studeaf API application package
+""" 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, constr, validator, HttpUrl
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal, Optional, Dict, Any
 import re
 
 class UserBase(BaseModel):
@@ -98,3 +98,22 @@ class ChangePasswordRequest(BaseModel):
         if 'new_password' in values and v != values['new_password']:
             raise ValueError('Passwords do not match')
         return v
+
+class DeleteUserRequest(BaseModel):
+    password: str
+    confirm_text: str
+
+    @validator('confirm_text')
+    def validate_confirm_text(cls, v):
+        if v != "DELETE MY ACCOUNT":
+            raise ValueError('Please type "DELETE MY ACCOUNT" to confirm')
+        return v
+
+class ErrorResponse(BaseModel):
+    status_code: int
+    error_code: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+
+class ErrorResponseWithHeaders(ErrorResponse):
+    headers: Dict[str, str]

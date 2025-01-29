@@ -60,3 +60,12 @@ class UserRepository:
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def delete_user(self, user: User, password: str) -> bool:
+        """Delete a user after verifying their password"""
+        if not verify_password(password, user.password):
+            raise InvalidPasswordError()
+            
+        self.db.delete(user)
+        self.db.commit()
+        return True
