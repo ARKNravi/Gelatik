@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import auth, user
+from app.api.v1.endpoints import auth, user, summary
 from app.models.user_model import Base
 from sqlalchemy import create_engine
 from app.core.config import settings
@@ -33,6 +33,7 @@ except Exception as e:
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(user.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(summary.router, prefix="/api/v1/summaries", tags=["Summaries"])
 
 @app.get("/")
 def read_root():

@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Enum, Text
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class User(Base):
@@ -13,3 +14,6 @@ class User(Base):
     institution = Column(String, nullable=True)
     profile_picture_url = Column(Text, nullable=True)
     points = Column(Integer, default=0)  # For tracking user points
+
+    # Relationship with summaries
+    summaries = relationship("Summary", back_populates="user")
