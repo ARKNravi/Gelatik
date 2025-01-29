@@ -12,8 +12,12 @@ class ForumBase(BaseModel):
 class ForumCreate(ForumBase):
     pass
 
-class ForumUpdate(ForumBase):
-    pass
+class ForumUpdate(BaseModel):
+    judul: Optional[str] = Field(None, min_length=1, max_length=255)
+    subjudul: Optional[str] = Field(None, max_length=255)
+    topik: Optional[str] = Field(None, min_length=1, max_length=100)
+    isi: Optional[str] = Field(None, min_length=1)
+    gambar_url: Optional[str] = Field(None, max_length=500)
 
 class CommentBase(BaseModel):
     content: str = Field(..., min_length=1)

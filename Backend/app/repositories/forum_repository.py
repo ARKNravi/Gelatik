@@ -174,8 +174,10 @@ class ForumRepository:
                 detail="You can only update your own forums"
             )
 
-        for key, value in forum_update.model_dump(exclude_unset=True).items():
-            setattr(forum, key, value)
+        # Only update fields that were provided in the request
+        update_data = forum_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(forum, field, value)
 
         self.db.commit()
         self.db.refresh(forum)
