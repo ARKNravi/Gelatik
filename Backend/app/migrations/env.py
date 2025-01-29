@@ -6,15 +6,13 @@ import os
 import sys
 from pathlib import Path
 
-# Get the absolute path to the project root directory
-project_root = str(Path(__file__).parent.parent.parent.absolute())
-sys.path.insert(0, project_root)
+# Add the project root directory to Python path
+project_root = str(Path(__file__).resolve().parents[3])
+sys.path.append(project_root)
 
-# Import Base and all models to ensure they are registered
-from app.database import Base
-from app.models.user_model import User  # noqa
-from app.models.summary_model import Summary  # noqa
-from app.models.token_model import UsedToken  # noqa
+# Import all models here
+from app.models.user_model import Base, User
+from app.models.forum_model import Forum, Comment, ForumLike
 from app.core.config import settings
 
 # this is the Alembic Config object, which provides
@@ -28,8 +26,6 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -37,8 +33,8 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-# Set sqlalchemy.url from environment variable
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+def get_url():
+    return settings.DATABASE_URL
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -52,7 +48,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -73,7 +69,7 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
+    configuration["sqlalchemy.url"] = get_url()
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -82,7 +78,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection,
+            connection=connection, 
             target_metadata=target_metadata,
             include_schemas=True
         )
