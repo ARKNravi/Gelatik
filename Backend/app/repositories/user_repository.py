@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.user_model import User
+from app.models.user_model import User, IdentityType
 from app.models.token_model import UsedToken
 from app.api.v1.schemas.user_schemas import UserProfileUpdate
 from app.core.security import verify_password, get_password_hash
@@ -23,6 +23,9 @@ class UserRepository:
         # Update only the fields that were provided
         for key, value in update_data.items():
             if value is not None:  # Only update if value is not None
+                # Convert string identity_type to enum if needed
+                if key == 'identity_type' and isinstance(value, str):
+                    value = IdentityType(value)
                 setattr(user, key, value)
         
         self.db.commit()

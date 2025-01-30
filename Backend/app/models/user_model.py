@@ -22,10 +22,8 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationship with summaries
-    summaries = relationship("Summary", back_populates="user")
-
     # Relationships
-    forums = relationship("Forum", back_populates="user", cascade="all, delete-orphan")
-    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
-    forum_likes = relationship("ForumLike", back_populates="user", cascade="all, delete-orphan")
+    summaries = relationship("Summary", back_populates="user", cascade="all, delete-orphan")
+    summary_likes = relationship("SummaryLike", back_populates="user", cascade="all, delete-orphan")
+    summary_comments = relationship("SummaryComment", back_populates="user", cascade="all, delete-orphan")
+    summary_bookmarks = relationship("SummaryBookmark", back_populates="user", cascade="all, delete-orphan")
