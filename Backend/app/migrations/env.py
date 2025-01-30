@@ -12,7 +12,7 @@ sys.path.append(project_root)
 
 # Import all models here
 from app.models.user_model import Base, User
-from app.models.forum_model import Forum, Comment, ForumLike
+from app.models.summary_model import Summary, SummaryLike, SummaryComment, SummaryBookmark
 from app.core.config import settings
 
 # this is the Alembic Config object, which provides

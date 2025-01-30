@@ -6,6 +6,9 @@ import enum
 class IdentityType(str, enum.Enum):
     TULI = "tuli"
     DENGAR = "dengar"
+    ADMIN = "admin"
+    JBI = "jbi"
+    DOSEN = "dosen"
 
 class User(Base):
     __tablename__ = "users"

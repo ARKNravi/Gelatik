@@ -7,7 +7,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     birth_date: date
-    identity_type: Literal['tuli', 'dengar']
+    identity_type: Literal['tuli', 'dengar', 'admin', 'jbi', 'dosen']
 
 class UserCreate(UserBase):
     password: constr(min_length=8)
@@ -47,7 +47,7 @@ class UserProfile(BaseModel):
     email: EmailStr
     full_name: str
     birth_date: date
-    identity_type: Literal['tuli', 'dengar']
+    identity_type: Literal['tuli', 'dengar', 'admin', 'jbi', 'dosen']
     institution: Optional[str] = None
     profile_picture_url: Optional[str] = None
     points: int = 0
