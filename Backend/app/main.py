@@ -8,6 +8,7 @@ from app.models.user_model import Base
 from sqlalchemy import create_engine
 from app.core.config import settings
 import logging
+from app.api.v1.api import api_router
 
 app = FastAPI(
     title="Gelatik API",
@@ -43,6 +44,7 @@ app.include_router(auth_router, prefix=API_V1_STR + "/auth", tags=["Authenticati
 app.include_router(user_router, prefix=API_V1_STR + "/users", tags=["Users"])
 app.include_router(summary_router, prefix=API_V1_STR + "/summaries", tags=["Summaries"])
 app.include_router(translation_router, prefix=API_V1_STR + "/translations", tags=["Translations"])
+app.include_router(api_router, prefix=API_V1_STR)
 
 @app.get("/")
 def root():
