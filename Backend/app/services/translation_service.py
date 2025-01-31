@@ -66,19 +66,11 @@ class TranslationService:
         self.db.commit()
 
     def create_translator(self, translator: TranslatorCreate, user_id: int, user_identity_type: str) -> Translation:
-        # Only admin can create JBI translators
+        # Only admin can create JBI translators, but they can create multiple
         if user_identity_type.lower() != "admin":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin can create JBI translators"
-            )
-        
-        # Check if user already has a translator profile
-        existing_translator = self.translation_repository.get_translator_by_user_id(user_id)
-        if existing_translator:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User already has a translator profile"
             )
         return self.translation_repository.create_translator(translator, user_id)
 
@@ -112,7 +104,7 @@ class TranslationService:
             )
         return self.translation_repository.update_translator(translator_id, translator_update)
 
-    def create_order(self, order: TranslationOrderCreate, user_id: int, user_identity_type: str) -> TranslationOrder:
+    def create_order(self, order: TranslationOrderCreate, translator_id: int, user_id: int, user_identity_type: str) -> TranslationOrder:
         # Only JBI and dengar users cannot create orders
         if user_identity_type.lower() in ["jbi", "dengar"]:
             raise HTTPException(
@@ -121,7 +113,7 @@ class TranslationService:
             )
 
         # Get translator
-        translator = self.translation_repository.get_translator(order.translator_id)
+        translator = self.translation_repository.get_translator(translator_id)
         if not translator:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -152,7 +144,7 @@ class TranslationService:
                 detail=f"Invalid time slot. Valid options are: {valid_time_slots}"
             )
 
-        return self.translation_repository.create_order(order, user_id)
+        return self.translation_repository.create_order(order, translator_id, user_id)
 
     def get_user_orders(self, user_id: int, skip: int = 0, limit: int = 10) -> PaginatedOrderResponse:
         orders, total = self.translation_repository.get_user_orders(user_id, skip, limit)
@@ -201,3 +193,28 @@ class TranslationService:
                 )
 
         return self.translation_repository.update_order_status(order_id, status_update.status, user_id)
+
+    def complete_order(self, order_id: int, user_id: int) -> TranslationOrder:
+        """Allow user to complete their confirmed order"""
+        order = self.translation_repository.get_order(order_id)
+        if not order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Order not found"
+            )
+
+        # Only order owner can complete it
+        if order.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the order owner can complete this order"
+            )
+
+        # Order must be confirmed first
+        if order.status != "confirmed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only confirmed orders can be completed"
+            )
+
+        return self.translation_repository.update_order_status(order_id, "completed", user_id)

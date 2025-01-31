@@ -47,19 +47,10 @@ class TranslationRepository:
         self.db.refresh(db_translator)
         return db_translator
 
-    def create_order(self, order: TranslationOrderCreate, user_id: int) -> TranslationOrder:
-        # Check if translator exists
-        translator = self.get_translator(order.translator_id)
-        if not translator:
-            raise HTTPException(status_code=404, detail="Translator not found")
-
-        # Check if translator is available
-        if not translator.availability:
-            raise HTTPException(status_code=400, detail="Translator is not available")
-
+    def create_order(self, order: TranslationOrderCreate, translator_id: int, user_id: int) -> TranslationOrder:
         # Create order with time_slot value directly from request
         db_order = TranslationOrder(
-            translator_id=order.translator_id,
+            translator_id=translator_id,
             user_id=user_id,
             tanggal=order.tanggal,
             time_slot=order.time_slot,  # Use the time_slot value directly

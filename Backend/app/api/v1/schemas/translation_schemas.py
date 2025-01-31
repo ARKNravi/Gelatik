@@ -48,10 +48,9 @@ class TranslationOrderBase(BaseModel):
     tanggal: date
     time_slot: str = Field(..., description="Time slot in format '08.00 - 09.00'")
     description: str = Field(..., min_length=1, max_length=500)
-    translator_id: int
 
 class TranslationOrderCreate(TranslationOrderBase):
-    pass
+    pass  # translator_id will be in URL path
 
 class TranslationOrderUpdate(BaseModel):
     status: str = Field(..., pattern="^(pending|confirmed|cancelled|completed)$")

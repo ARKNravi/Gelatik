@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.orm import Session
 from app.api.v1.schemas.translation_schemas import (
     TranslatorCreate,
@@ -60,15 +60,16 @@ async def update_translator(
     translation_service = TranslationService(translation_repository)
     return translation_service.update_translator(translator_id, translator, current_user.id)
 
-@router.post("/orders", response_model=TranslationOrder)
+@router.post("/{translator_id}/orders", response_model=TranslationOrder)
 async def create_order(
-    order: TranslationOrderCreate,
+    translator_id: int = Path(..., description="ID of the translator"),
+    order: TranslationOrderCreate = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     translation_repository = TranslationRepository(db)
     translation_service = TranslationService(translation_repository)
-    return translation_service.create_order(order, current_user.id, current_user.identity_type)
+    return translation_service.create_order(order, translator_id, current_user.id, current_user.identity_type)
 
 @router.get("/orders/my-orders", response_model=PaginatedOrderResponse)
 async def get_my_orders(
@@ -102,3 +103,13 @@ async def update_order_status(
     translation_repository = TranslationRepository(db)
     translation_service = TranslationService(translation_repository)
     return translation_service.update_order_status(order_id, status_update, current_user.id, current_user.identity_type)
+
+@router.patch("/orders/{order_id}/complete", response_model=TranslationOrder)
+async def complete_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.complete_order(order_id, current_user.id)
