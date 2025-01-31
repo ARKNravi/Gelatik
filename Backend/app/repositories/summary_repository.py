@@ -67,7 +67,9 @@ class SummaryRepository:
     def create_summary(self, summary: SummaryCreate, user_id: int) -> dict:
         db_summary = Summary(
             content=summary.content,
-            user_id=user_id
+            user_id=user_id,
+            title=None,
+            is_published=False
         )
         self.db.add(db_summary)
         self.db.commit()

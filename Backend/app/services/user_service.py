@@ -21,7 +21,7 @@ class UserService:
             "email": user.email,
             "full_name": user.full_name,
             "birth_date": user.birth_date,
-            "identity_type": user.identity_type.value if user.identity_type else None,
+            "identity_type": user.identity_type.value.lower() if user.identity_type else None,
             "institution": user.institution,
             "profile_picture_url": user.profile_picture_url,
             "points": user.points
@@ -43,7 +43,7 @@ class UserService:
                 "email": updated_user.email,
                 "full_name": updated_user.full_name,
                 "birth_date": updated_user.birth_date,
-                "identity_type": updated_user.identity_type.value if updated_user.identity_type else None,
+                "identity_type": updated_user.identity_type.value.lower() if updated_user.identity_type else None,
                 "institution": updated_user.institution,
                 "profile_picture_url": updated_user.profile_picture_url,
                 "points": updated_user.points

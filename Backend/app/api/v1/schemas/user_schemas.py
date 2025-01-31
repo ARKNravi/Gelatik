@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, constr, validator, HttpUrl
 from datetime import date
 from typing import Literal, Optional, Dict, Any
 import re
+from app.models.user_model import IdentityType
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -51,6 +52,12 @@ class UserProfile(BaseModel):
     institution: Optional[str] = None
     profile_picture_url: Optional[str] = None
     points: int = 0
+
+    @validator('identity_type', pre=True)
+    def convert_identity_type(cls, v):
+        if isinstance(v, IdentityType):
+            return v.value.lower()
+        return v.lower() if v else v
 
     class Config:
         from_attributes = True

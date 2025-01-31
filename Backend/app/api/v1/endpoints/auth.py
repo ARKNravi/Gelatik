@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.core.security import create_access_token, get_password_hash, verify_password, oauth2_scheme
 from app.core.config import settings
-from app.api.v1.schemas.user_schemas import (
-    UserCreate, UserResponse, UserLogin, Token,
+from app.api.v1.schemas.auth_schemas import (
+    UserCreate, UserLogin, Token,
     ErrorResponse, ErrorResponseWithHeaders
 )
 from app.models.user_model import User
@@ -36,14 +36,13 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
             email=user.email,
             full_name=user.full_name,
             birth_date=user.birth_date,
-            identity_type=user.identity_type,
-            password=get_password_hash(user.password)
+            identity_type=user.identity_type.upper(),  # Convert to uppercase
+            hashed_password=get_password_hash(user.password)
         )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-        
-        # Generate JWT token
+
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": db_user.email}, expires_delta=access_token_expires
@@ -61,12 +60,12 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
             }
         )
 
-@router.post("/login/token", response_model=Token, responses={
+@router.post("/login", response_model=Token, responses={
     401: {"model": ErrorResponseWithHeaders, "description": "Authentication failed"}
 })
-async def login_with_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password):
+async def login_with_json(credentials: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user or not verify_password(credentials.password, user.hashed_password):
         return JSONResponse(
             status_code=401,
             content={
@@ -83,12 +82,12 @@ async def login_with_form(form_data: OAuth2PasswordRequestForm = Depends(), db: 
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/login", response_model=Token, responses={
+@router.post("/login/token", response_model=Token, responses={
     401: {"model": ErrorResponseWithHeaders, "description": "Authentication failed"}
 })
-async def login_with_json(credentials: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == credentials.email).first()
-    if not user or not verify_password(credentials.password, user.password):
+async def login_with_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
         return JSONResponse(
             status_code=401,
             content={
