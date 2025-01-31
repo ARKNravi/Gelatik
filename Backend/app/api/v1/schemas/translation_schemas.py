@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, conint
 from typing import Optional, List
 from datetime import date, datetime
 from app.api.v1.schemas.user_schemas import UserProfile
@@ -55,6 +55,26 @@ class TranslationOrderCreate(TranslationOrderBase):
 class TranslationOrderUpdate(BaseModel):
     status: str = Field(..., pattern="^(pending|confirmed|cancelled|completed)$")
 
+class TranslationReviewBase(BaseModel):
+    rating: conint(ge=1, le=5) = Field(..., description="Rating from 1 to 5")
+    description: Optional[str] = Field(None, min_length=1, max_length=1000)
+
+class TranslationReviewCreate(TranslationReviewBase):
+    pass
+
+class TranslationReviewUpdate(TranslationReviewBase):
+    pass
+
+class TranslationReview(TranslationReviewBase):
+    id: int
+    order_id: int
+    user_id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
 class TranslationOrder(TranslationOrderBase):
     id: int
     status: str
@@ -63,6 +83,7 @@ class TranslationOrder(TranslationOrderBase):
     user_id: int
     translator: Optional[Translation] = None
     user: Optional[UserProfile] = None
+    review: Optional[TranslationReview] = None
 
     @property
     def user_identity_type(self) -> str:
@@ -79,4 +100,8 @@ class PaginatedTranslatorResponse(BaseModel):
 
 class PaginatedOrderResponse(BaseModel):
     items: List[TranslationOrder]
+    total: int
+
+class PaginatedReviewResponse(BaseModel):
+    items: List[TranslationReview]
     total: int

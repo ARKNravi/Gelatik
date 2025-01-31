@@ -9,7 +9,11 @@ from app.api.v1.schemas.translation_schemas import (
     TranslationOrder,
     PaginatedTranslatorResponse,
     PaginatedOrderResponse,
-    TranslationUpdate
+    TranslationUpdate,
+    TranslationReviewCreate,
+    TranslationReviewUpdate,
+    TranslationReview,
+    PaginatedReviewResponse
 )
 from app.api.v1.endpoints.user import get_current_user
 from app.services.translation_service import TranslationService
@@ -151,3 +155,72 @@ async def admin_delete_translation(
     translation_repository = TranslationRepository(db)
     translation_service = TranslationService(translation_repository)
     translation_service.admin_delete_translation(translation_id)
+
+@router.post("/orders/{order_id}/reviews", response_model=TranslationReview)
+async def create_review(
+    order_id: int,
+    review: TranslationReviewCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Create a review for a completed order. Only the order owner can create a review.
+    """
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.create_review(order_id, review, current_user.id)
+
+@router.put("/orders/{order_id}/reviews", response_model=TranslationReview)
+async def update_review(
+    order_id: int,
+    review: TranslationReviewUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update a review. Only the review owner can update it.
+    """
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.update_review(order_id, review, current_user.id)
+
+@router.get("/orders/{order_id}/reviews", response_model=TranslationReview)
+async def get_review(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get a review for an order.
+    """
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.get_review(order_id)
+
+@router.get("/translators/{translator_id}/reviews", response_model=PaginatedReviewResponse)
+async def get_translator_reviews(
+    translator_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get all reviews for a translator.
+    """
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.get_translator_reviews(translator_id, skip, limit)
+
+@router.delete("/reviews/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_review(
+    review_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete a review. Only admin or review owner can delete.
+    """
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    translation_service.delete_review(review_id, current_user.id, current_user.identity_type)

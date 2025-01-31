@@ -1,10 +1,16 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import date
 
-from app.models.translation_model import Translation, TranslationOrder
-from app.api.v1.schemas.translation_schemas import TranslationCreate, TranslationUpdate, TranslationOrderCreate, TranslationOrderUpdate, TranslatorCreate, TranslatorUpdate, PaginatedTranslatorResponse, PaginatedOrderResponse
+from app.models.translation_model import Translation, TranslationOrder, TranslationReview
+from app.api.v1.schemas.translation_schemas import (
+    TranslationCreate, TranslationUpdate, TranslationOrderCreate, 
+    TranslationOrderUpdate, TranslatorCreate, TranslatorUpdate, 
+    PaginatedTranslatorResponse, PaginatedOrderResponse, 
+    TranslationReviewCreate, TranslationReviewUpdate,
+    PaginatedReviewResponse
+)
 from app.repositories.translation_repository import TranslationRepository
 
 class TranslationService:
@@ -247,3 +253,91 @@ class TranslationService:
             )
             
         self.translation_repository.delete_translator(translation_id)
+
+    def create_review(self, order_id: int, review: TranslationReviewCreate, user_id: int) -> TranslationReview:
+        """Create a review for a completed order"""
+        # Get the order
+        order = self.translation_repository.get_order(order_id)
+        if not order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Order not found"
+            )
+
+        # Check if user owns the order
+        if order.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the order owner can create a review"
+            )
+
+        # Check if order is completed
+        if order.status != "completed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can only review completed orders"
+            )
+
+        # Check if review already exists
+        existing_review = self.translation_repository.get_review_by_order(order_id)
+        if existing_review:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Review already exists for this order"
+            )
+
+        return self.translation_repository.create_review(order_id, user_id, review)
+
+    def update_review(self, order_id: int, review: TranslationReviewUpdate, user_id: int) -> TranslationReview:
+        """Update an existing review"""
+        existing_review = self.translation_repository.get_review_by_order(order_id)
+        if not existing_review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found"
+            )
+
+        # Check if user owns the review
+        if existing_review.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the review owner can update it"
+            )
+
+        return self.translation_repository.update_review(existing_review.id, review)
+
+    def get_review(self, order_id: int) -> TranslationReview:
+        """Get a review by order ID"""
+        review = self.translation_repository.get_review_by_order(order_id)
+        if not review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found"
+            )
+        return review
+
+    def get_translator_reviews(self, translator_id: int, skip: int = 0, limit: int = 10) -> PaginatedReviewResponse:
+        """Get all reviews for a translator"""
+        reviews, total = self.translation_repository.get_translator_reviews(translator_id, skip, limit)
+        return PaginatedReviewResponse(
+            items=reviews,
+            total=total
+        )
+
+    def delete_review(self, review_id: int, user_id: int, user_identity_type: str) -> None:
+        """Delete a review - only admin or review owner can delete"""
+        review = self.translation_repository.get_review(review_id)
+        if not review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found"
+            )
+
+        # Check if user is admin or review owner
+        if user_identity_type.lower() != "admin" and review.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admin or review owner can delete this review"
+            )
+
+        self.translation_repository.delete_review(review_id)

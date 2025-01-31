@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from app.models.translation_model import Translation, TranslationOrder
-from app.api.v1.schemas.translation_schemas import TranslatorCreate, TranslatorUpdate, TranslationOrderCreate
+from app.models.translation_model import Translation, TranslationOrder, TranslationReview
+from app.api.v1.schemas.translation_schemas import TranslatorCreate, TranslatorUpdate, TranslationOrderCreate, TranslationReviewCreate, TranslationReviewUpdate
 from fastapi import HTTPException, status
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 class TranslationRepository:
     def __init__(self, db: Session):
@@ -120,4 +120,67 @@ class TranslationRepository:
             raise HTTPException(status_code=404, detail="Translator not found")
         
         self.db.delete(translator)
+        self.db.commit()
+
+    def create_review(self, order_id: int, user_id: int, review: TranslationReviewCreate) -> TranslationReview:
+        """Create a new review"""
+        db_review = TranslationReview(
+            order_id=order_id,
+            user_id=user_id,
+            rating=review.rating,
+            description=review.description
+        )
+        self.db.add(db_review)
+        self.db.commit()
+        self.db.refresh(db_review)
+        return db_review
+
+    def update_review(self, review_id: int, review_update: TranslationReviewUpdate) -> TranslationReview:
+        """Update an existing review"""
+        db_review = self.db.query(TranslationReview).filter(TranslationReview.id == review_id).first()
+        if not db_review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        for field, value in review_update.model_dump().items():
+            setattr(db_review, field, value)
+
+        self.db.commit()
+        self.db.refresh(db_review)
+        return db_review
+
+    def get_review_by_order(self, order_id: int) -> Optional[TranslationReview]:
+        """Get a review by order ID"""
+        return self.db.query(TranslationReview).filter(TranslationReview.order_id == order_id).first()
+
+    def get_translator_reviews(self, translator_id: int, skip: int = 0, limit: int = 10) -> Tuple[List[TranslationReview], int]:
+        """Get all reviews for a translator's orders"""
+        total = (
+            self.db.query(TranslationReview)
+            .join(TranslationOrder)
+            .filter(TranslationOrder.translator_id == translator_id)
+            .count()
+        )
+        
+        reviews = (
+            self.db.query(TranslationReview)
+            .join(TranslationOrder)
+            .filter(TranslationOrder.translator_id == translator_id)
+            .order_by(TranslationReview.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        return reviews, total
+
+    def get_review(self, review_id: int) -> Optional[TranslationReview]:
+        """Get a review by ID"""
+        return self.db.query(TranslationReview).filter(TranslationReview.id == review_id).first()
+
+    def delete_review(self, review_id: int):
+        """Delete a review"""
+        review = self.get_review(review_id)
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+        
+        self.db.delete(review)
         self.db.commit()
