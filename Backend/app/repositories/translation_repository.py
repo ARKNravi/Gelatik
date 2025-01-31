@@ -101,3 +101,23 @@ class TranslationRepository:
         self.db.commit()
         self.db.refresh(order)
         return order
+
+    def get_active_orders_count(self, translator_id: int) -> int:
+        """Get count of active orders (pending or confirmed) for a translator"""
+        return (
+            self.db.query(TranslationOrder)
+            .filter(
+                TranslationOrder.translator_id == translator_id,
+                TranslationOrder.status.in_(["pending", "confirmed"])
+            )
+            .count()
+        )
+
+    def delete_translator(self, translator_id: int):
+        """Delete a translator and all their completed/cancelled orders"""
+        translator = self.get_translator(translator_id)
+        if not translator:
+            raise HTTPException(status_code=404, detail="Translator not found")
+        
+        self.db.delete(translator)
+        self.db.commit()

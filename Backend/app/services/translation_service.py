@@ -218,3 +218,32 @@ class TranslationService:
             )
 
         return self.translation_repository.update_order_status(order_id, "completed", user_id)
+
+    def admin_update_translation(self, translation_id: int, translation: TranslationUpdate) -> Translation:
+        """Admin-only method to update any translation"""
+        db_translation = self.translation_repository.get_translator(translation_id)
+        if not db_translation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Translation not found"
+            )
+        return self.translation_repository.update_translator(translation_id, translation)
+
+    def admin_delete_translation(self, translation_id: int):
+        """Admin-only method to delete any translation"""
+        db_translation = self.translation_repository.get_translator(translation_id)
+        if not db_translation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Translation not found"
+            )
+        
+        # Check if translator has any active orders
+        active_orders = self.translation_repository.get_active_orders_count(translation_id)
+        if active_orders > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete translator with active orders"
+            )
+            
+        self.translation_repository.delete_translator(translation_id)

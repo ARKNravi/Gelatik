@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, Query, Path, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api.v1.schemas.translation_schemas import (
     TranslatorCreate,
@@ -8,7 +8,8 @@ from app.api.v1.schemas.translation_schemas import (
     Translation,
     TranslationOrder,
     PaginatedTranslatorResponse,
-    PaginatedOrderResponse
+    PaginatedOrderResponse,
+    TranslationUpdate
 )
 from app.api.v1.endpoints.user import get_current_user
 from app.services.translation_service import TranslationService
@@ -113,3 +114,40 @@ async def complete_order(
     translation_repository = TranslationRepository(db)
     translation_service = TranslationService(translation_repository)
     return translation_service.complete_order(order_id, current_user.id)
+
+@router.put("/admin/translations/{translation_id}", response_model=Translation)
+async def admin_update_translation(
+    translation_id: int,
+    translation: TranslationUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update a translation. Only admin can perform this action.
+    """
+    if current_user.identity_type.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can update translations"
+        )
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    return translation_service.admin_update_translation(translation_id, translation)
+
+@router.delete("/admin/translations/{translation_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def admin_delete_translation(
+    translation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete a translation. Only admin can perform this action.
+    """
+    if current_user.identity_type.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can delete translations"
+        )
+    translation_repository = TranslationRepository(db)
+    translation_service = TranslationService(translation_repository)
+    translation_service.admin_delete_translation(translation_id)
