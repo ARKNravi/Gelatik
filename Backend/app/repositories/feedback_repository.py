@@ -81,6 +81,14 @@ class FeedbackRepository:
         total = self.session.query(func.count(FeedbackDosen.id)).scalar()
         return list(feedbacks), total
 
+    def get_average_system_rating(self) -> float:
+        result = self.session.query(func.avg(FeedbackSystem.rating)).scalar()
+        return float(result) if result else 0.0
+
+    def get_average_dosen_rating(self) -> float:
+        result = self.session.query(func.avg(FeedbackDosen.rating)).scalar()
+        return float(result) if result else 0.0
+
     def delete_feedback(self, feedback_id: int) -> bool:
         feedback = self.get_feedback(feedback_id)
         if feedback:

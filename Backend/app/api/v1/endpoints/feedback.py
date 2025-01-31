@@ -13,7 +13,8 @@ from app.api.v1.schemas.feedback_schemas import (
     FeedbackDosenUpdate,
     FeedbackDosen,
     PaginatedFeedbackResponse,
-    PaginatedFeedbackDosenResponse
+    PaginatedFeedbackDosenResponse,
+    OverallFeedbackStats
 )
 from app.services.feedback_service import FeedbackService
 from app.repositories.feedback_repository import FeedbackRepository
@@ -169,3 +170,18 @@ def delete_dosen_feedback(
     feedback_repository = FeedbackRepository(db)
     feedback_service = FeedbackService(feedback_repository)
     feedback_service.delete_feedback_dosen(feedback_id, current_user)
+
+@router.get("/stats", response_model=OverallFeedbackStats)
+def get_feedback_stats(
+    skip: int = 0,
+    limit: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get overall feedback statistics including average ratings.
+    Only admins can access this endpoint.
+    """
+    feedback_repository = FeedbackRepository(db)
+    feedback_service = FeedbackService(feedback_repository)
+    return feedback_service.get_overall_feedback_stats(current_user, skip, limit)

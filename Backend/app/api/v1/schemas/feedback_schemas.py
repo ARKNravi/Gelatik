@@ -43,3 +43,11 @@ class PaginatedFeedbackResponse(BaseModel):
 class PaginatedFeedbackDosenResponse(BaseModel):
     items: List[FeedbackDosen]
     total: int
+
+class OverallFeedbackStats(BaseModel):
+    system_feedback: PaginatedFeedbackResponse
+    dosen_feedback: PaginatedFeedbackDosenResponse
+    system_average_rating: float
+    dosen_average_rating: float
+    total_system_feedback: int
+    total_dosen_feedback: int

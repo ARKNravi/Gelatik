@@ -7,7 +7,8 @@ from app.api.v1.schemas.feedback_schemas import (
     Feedback,
     FeedbackDosenCreate,
     FeedbackDosenUpdate,
-    FeedbackDosen
+    FeedbackDosen,
+    OverallFeedbackStats
 )
 
 
@@ -84,6 +85,27 @@ class FeedbackService:
                 detail="Only admins can view all feedback"
             )
         return self.feedback_repository.get_all_feedback_dosen(skip, limit)
+
+    def get_overall_feedback_stats(self, user: User, skip: int = 0, limit: int = 10) -> OverallFeedbackStats:
+        if not user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can view feedback statistics"
+            )
+        
+        system_feedbacks, total_system = self.feedback_repository.get_all_feedback(skip, limit)
+        dosen_feedbacks, total_dosen = self.feedback_repository.get_all_feedback_dosen(skip, limit)
+        system_avg = self.feedback_repository.get_average_system_rating()
+        dosen_avg = self.feedback_repository.get_average_dosen_rating()
+
+        return OverallFeedbackStats(
+            system_feedback={"items": system_feedbacks, "total": total_system},
+            dosen_feedback={"items": dosen_feedbacks, "total": total_dosen},
+            system_average_rating=round(system_avg, 2),
+            dosen_average_rating=round(dosen_avg, 2),
+            total_system_feedback=total_system,
+            total_dosen_feedback=total_dosen
+        )
 
     def delete_feedback(self, feedback_id: int, user: User) -> bool:
         feedback = self.feedback_repository.get_feedback(feedback_id)
