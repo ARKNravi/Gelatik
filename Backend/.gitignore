@@ -81,3 +81,6 @@ Dockerfile
 *.egg-info
 dist/
 build/
+
+# Vercel deployment related
+.vercel
