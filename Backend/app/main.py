@@ -5,8 +5,7 @@ from app.api.v1.endpoints.user import router as user_router
 from app.api.v1.endpoints.summary import router as summary_router
 from app.api.v1.endpoints.translation import router as translation_router
 from app.models.user_model import Base
-from sqlalchemy import create_engine
-from app.core.config import settings
+from app.database import engine
 import logging
 from app.api.v1.api import api_router
 
@@ -31,7 +30,6 @@ app.add_middleware(
 
 # Create database tables
 try:
-    engine = create_engine(settings.DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created successfully")
 except Exception as e:
