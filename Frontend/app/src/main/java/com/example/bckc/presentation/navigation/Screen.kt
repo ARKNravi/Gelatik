@@ -2,8 +2,9 @@ package com.example.bckc.presentation.navigation
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Home : Screen("home")
     object Register : Screen("register")
+    object RegisterPassword : Screen("register_password")
+    object Home : Screen("home")
     object Translate : Screen("translate")
     object Forum : Screen("forum")
     object ForumDetail : Screen("forum_detail")

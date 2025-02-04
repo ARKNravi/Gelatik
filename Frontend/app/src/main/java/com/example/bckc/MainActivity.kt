@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.bckc.presentation.navigation.NavGraph
 import com.example.bckc.presentation.theme.StuDeafTheme
-import com.example.bckc.utils.PreferenceManager
+import com.example.bckc.utils.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     
     @Inject
-    lateinit var preferenceManager: PreferenceManager
+    lateinit var tokenManager: TokenManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    NavGraph(navController = navController, preferenceManager = preferenceManager)
+                    NavGraph(navController = navController, tokenManager = tokenManager)
                 }
             }
         }
