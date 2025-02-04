@@ -1,4 +1,4 @@
-package com.example.bckc.presentation.screens.home
+package com.example.bckc.presentation.screens.jbi
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -15,10 +14,7 @@ import com.example.bckc.presentation.components.NavigationBar
 import com.example.bckc.presentation.navigation.Screen
 
 @Composable
-fun HomeScreen(
-    navController: NavController,
-    currentRoute: String
-) {
+fun JBIScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -33,17 +29,16 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Welcome to Home Screen",
+                text = "JBI Screen",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
                 color = Color(0xFF144F93)
             )
         }
         
         NavigationBar(
             navController = navController,
-            currentRoute = Screen.Home.route,
+            currentRoute = Screen.JBI.route,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
-}
+} 
