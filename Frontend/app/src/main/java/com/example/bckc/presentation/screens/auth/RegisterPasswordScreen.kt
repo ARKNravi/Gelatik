@@ -47,20 +47,7 @@ fun RegisterPasswordScreen(
 
     // Get stored registration data
     val registrationData by viewModel.registrationData.collectAsState()
-
-    // Validate stored data
-    LaunchedEffect(Unit) {
-        if (registrationData.email.isBlank() || 
-            registrationData.fullName.isBlank() || 
-            registrationData.birthDate.isBlank() || 
-            registrationData.identityType.isBlank()
-        ) {
-            navController.popBackStack()
-            scope.launch {
-                snackbarHostState.showSnackbar("Please fill in all registration details first")
-            }
-        }
-    }
+    val registerState by viewModel.registerState.collectAsState()
 
     // Password validation checks
     val hasMinLength = password.length >= 8
@@ -73,31 +60,27 @@ fun RegisterPasswordScreen(
     val isFormValid = hasMinLength && hasLowerCase && hasUpperCase && 
                      hasDigit && hasSpecialChar && passwordsMatch && isTermsAccepted
 
-    // Update registration data when password fields change
-    LaunchedEffect(password, confirmPassword) {
-        viewModel.updateRegistrationData(
-            password = password,
-            passwordConfirm = confirmPassword
-        )
-    }
-
-    // Handle registration state
-    val registerState by viewModel.registerState.collectAsState()
+    // Handle registration response
     LaunchedEffect(registerState) {
         when (registerState) {
             is Resource.Success -> {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Registrasi berhasil!")
+                }
                 navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
-                viewModel.resetRegisterState()
             }
             is Resource.Error -> {
                 scope.launch {
                     snackbarHostState.showSnackbar(
-                        (registerState as Resource.Error).message ?: "Registration failed"
+                        when ((registerState as Resource.Error).message) {
+                            "EMAIL_EXISTS" -> "Email sudah terdaftar"
+                            "All fields must be filled" -> "Semua field harus diisi"
+                            else -> (registerState as Resource.Error).message ?: "Terjadi kesalahan"
+                        }
                     )
                 }
-                viewModel.resetRegisterState()
             }
             else -> {}
         }
@@ -272,18 +255,34 @@ fun RegisterPasswordScreen(
             Button(
                 onClick = {
                     if (isFormValid) {
-                        // Validate all data before making the API call
-                        if (registrationData.email.isBlank() || 
-                            registrationData.fullName.isBlank() || 
-                            registrationData.birthDate.isBlank() || 
-                            registrationData.identityType.isBlank()
-                        ) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Please fill in all registration details")
-                            }
+                        // Format birth date from DD/MM/YYYY to YYYY-MM-DD
+                        val parts = registrationData.birthDate.split("/")
+                        val formattedDate = if (parts.size == 3) {
+                            "${parts[2]}-${parts[1]}-${parts[0]}"
                         } else {
-                            viewModel.register()
+                            registrationData.birthDate
                         }
+
+                        // Update the registration data with the password while preserving existing data
+                        viewModel.updateRegistrationData(
+                            email = registrationData.email,  // Preserve existing email
+                            fullName = registrationData.fullName,  // Preserve existing fullName
+                            birthDate = registrationData.birthDate,  // Preserve existing birthDate
+                            identityType = registrationData.identityType,  // Preserve existing identityType
+                            password = password,  // Add new password
+                            passwordConfirm = confirmPassword  // Add new passwordConfirm
+                        )
+
+                        // For debugging, show the data that will be sent
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Sending: ${registrationData.email}, ${registrationData.fullName}, " +
+                                "${registrationData.birthDate}, ${registrationData.identityType}, $password"
+                            )
+                        }
+
+                        // Trigger registration
+                        viewModel.register()
                     }
                 },
                 modifier = Modifier
@@ -311,10 +310,21 @@ fun RegisterPasswordScreen(
                 }
             }
 
+            // Debug information
+            Text(
+                text = "Current Data: Email=${registrationData.email}, " +
+                      "Name=${registrationData.fullName}, " +
+                      "Birth=${registrationData.birthDate}, " +
+                      "Identity=${registrationData.identityType}",
+                fontSize = 10.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(16.dp)
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Snackbar for error messages
+        // Snackbar for messages
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)

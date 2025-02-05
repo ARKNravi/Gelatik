@@ -15,30 +15,13 @@ class RegisterUseCase @Inject constructor(
         password: String,
         passwordConfirm: String
     ): Resource<Boolean> {
+        // Basic validation to ensure no empty fields
         if (email.isBlank() || fullName.isBlank() || birthDate.isBlank() || 
             identityType.isBlank() || password.isBlank() || passwordConfirm.isBlank()) {
             return Resource.Error("All fields must be filled")
         }
 
-        if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@(.+)\$"))) {
-            return Resource.Error("Invalid email format")
-        }
-
-        if (password != passwordConfirm) {
-            return Resource.Error("Passwords do not match")
-        }
-
-        // Password validation
-        val hasMinLength = password.length >= 8
-        val hasLowerCase = password.any { it.isLowerCase() }
-        val hasUpperCase = password.any { it.isUpperCase() }
-        val hasDigit = password.any { it.isDigit() }
-        val hasSpecialChar = password.any { !it.isLetterOrDigit() }
-
-        if (!hasMinLength || !hasLowerCase || !hasUpperCase || !hasDigit || !hasSpecialChar) {
-            return Resource.Error("Password does not meet requirements")
-        }
-
+        // Call repository to make the API request
         return repository.register(email, fullName, birthDate, identityType, password, passwordConfirm)
     }
 }

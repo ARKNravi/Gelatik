@@ -36,11 +36,20 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var fullName by remember { mutableStateOf("") }
-    var birthDate by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var selectedIdentity by remember { mutableStateOf<String?>(null) }
+    // Get stored registration data
+    val registrationData by viewModel.registrationData.collectAsState()
     
+    // Initialize state with existing data
+    var fullName by remember { mutableStateOf(registrationData.fullName) }
+    var birthDate by remember { mutableStateOf(registrationData.birthDate) }
+    var email by remember { mutableStateOf(registrationData.email) }
+    var selectedIdentity by remember { mutableStateOf(registrationData.identityType) }
+
+    // Debug text to verify data
+    LaunchedEffect(fullName, birthDate, email, selectedIdentity) {
+        println("Current form data: email=$email, name=$fullName, birth=$birthDate, type=$selectedIdentity")
+    }
+
     val isFormValid = fullName.isNotBlank() && 
                      birthDate.isNotBlank() && 
                      email.isNotBlank() && 
@@ -231,19 +240,18 @@ fun RegisterScreen(
         // Continue button
         Button(
             onClick = {
+                // Save data before navigation
                 viewModel.updateRegistrationData(
                     email = email,
                     fullName = fullName,
                     birthDate = birthDate,
                     identityType = selectedIdentity ?: ""
                 )
-                try {
-                    navController.navigate(Screen.RegisterPassword.route) {
-                        popUpTo(Screen.Register.route) { inclusive = false }
-                    }
-                } catch (e: Exception) {
-                    println("Navigation error: ${e.message}")
-                }
+                
+                // Debug print to verify data is saved
+                println("Saving data before navigation: email=$email, name=$fullName, birth=$birthDate, type=${selectedIdentity ?: ""}")
+                
+                navController.navigate(Screen.RegisterPassword.route)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -251,10 +259,10 @@ fun RegisterScreen(
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFormValid) Color(0xFF4A90E2) else Color(0xFFD9D9D9),
-                contentColor = if (isFormValid) Color.White else Color(0xFF8C8C8C)
+                containerColor = Color(0xFF4A90E2),
+                contentColor = Color.White
             ),
-            enabled = isFormValid
+            enabled = true
         ) {
             Text(
                 text = "Lanjutkan",
@@ -262,6 +270,14 @@ fun RegisterScreen(
                 fontWeight = FontWeight.SemiBold
             )
         }
+
+        // Debug information
+        Text(
+            text = "Current Data: Email=$email, Name=$fullName, Birth=$birthDate, Identity=${selectedIdentity ?: ""}",
+            fontSize = 10.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(16.dp)
+        )
 
         // Or register with
         Row(
