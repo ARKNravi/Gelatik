@@ -11,6 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.bckc.presentation.screens.auth.LoginScreen
 import com.example.bckc.presentation.screens.auth.RegisterScreen
 import com.example.bckc.presentation.screens.auth.RegisterPasswordScreen
+import com.example.bckc.presentation.screens.auth.AuthScreen
 import com.example.bckc.presentation.screens.forum.ForumScreen
 import com.example.bckc.presentation.screens.home.HomeScreen
 import com.example.bckc.presentation.screens.jbi.JBIScreen
@@ -36,6 +37,10 @@ fun NavGraph(
         
         composable(route = Screen.RegisterPassword.route) {
             RegisterPasswordScreen(navController)
+        }
+        
+        composable(route = Screen.AuthScreen.route) {
+            AuthScreen(navController)
         }
         
         composable(Screen.Home.route) {

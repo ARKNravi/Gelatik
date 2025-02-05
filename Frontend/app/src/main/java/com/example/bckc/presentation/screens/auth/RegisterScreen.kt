@@ -45,15 +45,31 @@ fun RegisterScreen(
     var email by remember { mutableStateOf(registrationData.email) }
     var selectedIdentity by remember { mutableStateOf(registrationData.identityType) }
 
-    // Debug text to verify data
-    LaunchedEffect(fullName, birthDate, email, selectedIdentity) {
-        println("Current form data: email=$email, name=$fullName, birth=$birthDate, type=$selectedIdentity")
-    }
+    // Error states
+    var fullNameError by remember { mutableStateOf("") }
+    var birthDateError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var identityError by remember { mutableStateOf("") }
 
+    // Email validation
+    val emailPattern = remember { Regex("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+") }
+    val isEmailValid = email.matches(emailPattern)
+
+    // Validate form fields
     val isFormValid = fullName.isNotBlank() && 
                      birthDate.isNotBlank() && 
-                     email.isNotBlank() && 
+                     email.isNotBlank() && isEmailValid && 
                      selectedIdentity != null
+
+    // Update registration data when fields change
+    LaunchedEffect(fullName, birthDate, email, selectedIdentity) {
+        viewModel.updateRegistrationData(
+            email = email,
+            fullName = fullName,
+            birthDate = birthDate,
+            identityType = selectedIdentity ?: ""
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -110,85 +126,124 @@ fun RegisterScreen(
         }
 
         // Form fields
-        Text(
-            text = "Nama Lengkap",
-            fontSize = 14.sp,
-            color = Color(0xFF1A1A1A),
-            modifier = Modifier.padding(start = 26.dp, top = 32.dp, bottom = 4.dp)
-        )
-        OutlinedTextField(
-            value = fullName,
-            onValueChange = { fullName = it },
-            placeholder = { Text("Masukkan Nama Lengkap", color = Color(0xFFBFBFBF)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFEAEAEA),
-                focusedBorderColor = Color(0xFF144F93)
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Text(
+                text = "Nama Lengkap",
+                fontSize = 14.sp,
+                color = Color(0xFF1A1A1A),
+                modifier = Modifier.padding(top = 32.dp, bottom = 4.dp)
             )
-        )
-
-        Text(
-            text = "Tanggal Lahir",
-            fontSize = 14.sp,
-            color = Color(0xFF1A1A1A),
-            modifier = Modifier.padding(start = 26.dp, top = 20.dp, bottom = 4.dp)
-        )
-        OutlinedTextField(
-            value = birthDate,
-            onValueChange = { input ->
-                if (input.length <= 10) {
-                    var formatted = input.filter { it.isDigit() }
-                    if (formatted.length >= 4) {
-                        formatted = formatted.substring(0, 2) + "/" + formatted.substring(2)
-                    }
-                    if (formatted.length >= 7) {
-                        formatted = formatted.substring(0, 5) + "/" + formatted.substring(5)
-                    }
-                    birthDate = formatted
-                }
-            },
-            placeholder = { Text("DD/MM/YYYY", color = Color(0xFFBFBFBF)) },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.calendar),
-                    contentDescription = "Calendar",
-                    tint = Color(0xFF144F93)
+            OutlinedTextField(
+                value = fullName,
+                onValueChange = { 
+                    fullName = it
+                    fullNameError = if (it.isBlank()) "Nama tidak boleh kosong" else ""
+                },
+                placeholder = { Text("Masukkan Nama Lengkap", color = Color(0xFFBFBFBF)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = if (fullNameError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFFEAEAEA),
+                    focusedBorderColor = if (fullNameError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFF144F93)
                 )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFEAEAEA),
-                focusedBorderColor = Color(0xFF144F93)
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
+            )
+            if (fullNameError.isNotEmpty()) {
+                Text(
+                    text = fullNameError,
+                    color = Color(0xFFF83B3F),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
 
-        Text(
-            text = "Email",
-            fontSize = 14.sp,
-            color = Color(0xFF1A1A1A),
-            modifier = Modifier.padding(start = 26.dp, top = 20.dp, bottom = 4.dp)
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            placeholder = { Text("Masukkan Email", color = Color(0xFFBFBFBF)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFEAEAEA),
-                focusedBorderColor = Color(0xFF144F93)
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-        )
+            Text(
+                text = "Tanggal Lahir",
+                fontSize = 14.sp,
+                color = Color(0xFF1A1A1A),
+                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp)
+            )
+            OutlinedTextField(
+                value = birthDate,
+                onValueChange = { input ->
+                    if (input.length <= 10) {
+                        var formatted = input.filter { it.isDigit() }
+                        if (formatted.length >= 4) {
+                            formatted = formatted.substring(0, 2) + "/" + formatted.substring(2)
+                        }
+                        if (formatted.length >= 7) {
+                            formatted = formatted.substring(0, 5) + "/" + formatted.substring(5)
+                        }
+                        birthDate = formatted
+                        birthDateError = if (formatted.isBlank()) "Tanggal lahir tidak boleh kosong" else ""
+                    }
+                },
+                placeholder = { Text("DD/MM/YYYY", color = Color(0xFFBFBFBF)) },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.calendar),
+                        contentDescription = "Calendar",
+                        tint = Color(0xFF144F93)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = if (birthDateError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFFEAEAEA),
+                    focusedBorderColor = if (birthDateError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFF144F93)
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            if (birthDateError.isNotEmpty()) {
+                Text(
+                    text = birthDateError,
+                    color = Color(0xFFF83B3F),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            Text(
+                text = "Email",
+                fontSize = 14.sp,
+                color = Color(0xFF1A1A1A),
+                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp)
+            )
+            OutlinedTextField(
+                value = email,
+                onValueChange = { 
+                    email = it
+                    emailError = when {
+                        it.isBlank() -> "Email tidak boleh kosong"
+                        !it.matches(emailPattern) -> "Format email tidak valid"
+                        else -> ""
+                    }
+                },
+                placeholder = { Text("Masukkan Email", color = Color(0xFFBFBFBF)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = when {
+                        emailError == "Format email tidak valid" -> Color(0xFFE9BA1F)
+                        emailError.isNotEmpty() -> Color(0xFFF83B3F)
+                        else -> Color(0xFFEAEAEA)
+                    },
+                    focusedBorderColor = when {
+                        emailError == "Format email tidak valid" -> Color(0xFFE9BA1F)
+                        emailError.isNotEmpty() -> Color(0xFFF83B3F)
+                        else -> Color(0xFF144F93)
+                    }
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = if (emailError == "Format email tidak valid") Color(0xFFE9BA1F) else Color(0xFFF83B3F),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
 
         Text(
             text = "Pilihan Identitas",
@@ -259,10 +314,10 @@ fun RegisterScreen(
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF4A90E2),
-                contentColor = Color.White
+                containerColor = if (isFormValid) Color(0xFF4A90E2) else Color(0xFFD9D9D9),
+                contentColor = if (isFormValid) Color.White else Color(0xFF8C8C8C)
             ),
-            enabled = true
+            enabled = isFormValid
         ) {
             Text(
                 text = "Lanjutkan",

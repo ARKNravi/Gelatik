@@ -49,6 +49,13 @@ fun RegisterPasswordScreen(
     val registrationData by viewModel.registrationData.collectAsState()
     val registerState by viewModel.registerState.collectAsState()
 
+    // Clear password fields when screen is first shown
+    LaunchedEffect(Unit) {
+        password = ""
+        confirmPassword = ""
+        isTermsAccepted = false
+    }
+
     // Password validation checks
     val hasMinLength = password.length >= 8
     val hasLowerCase = password.any { it.isLowerCase() }
@@ -56,6 +63,18 @@ fun RegisterPasswordScreen(
     val hasDigit = password.any { it.isDigit() }
     val hasSpecialChar = password.any { !it.isLetterOrDigit() }
     val passwordsMatch = password == confirmPassword && password.isNotEmpty()
+
+    // Password error state
+    var passwordError by remember { mutableStateOf("") }
+
+    // Update password error when confirm password changes
+    LaunchedEffect(confirmPassword) {
+        if (confirmPassword.isNotEmpty() && !passwordsMatch) {
+            passwordError = "Password tidak sesuai, silahkan cek kembali"
+        } else {
+            passwordError = ""
+        }
+    }
 
     val isFormValid = hasMinLength && hasLowerCase && hasUpperCase && 
                      hasDigit && hasSpecialChar && passwordsMatch && isTermsAccepted
@@ -67,7 +86,9 @@ fun RegisterPasswordScreen(
                 scope.launch {
                     snackbarHostState.showSnackbar("Registrasi berhasil!")
                 }
-                navController.navigate(Screen.Home.route) {
+                // Clear all registration data on success
+                viewModel.clearRegistrationData()
+                navController.navigate(Screen.AuthScreen.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             }
@@ -221,11 +242,20 @@ fun RegisterPasswordScreen(
                     .padding(horizontal = 24.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFFEAEAEA),
-                    focusedBorderColor = Color(0xFF144F93)
+                    unfocusedBorderColor = if (passwordError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFFEAEAEA),
+                    focusedBorderColor = if (passwordError.isNotEmpty()) Color(0xFFF83B3F) else Color(0xFF144F93)
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
+
+            if (passwordError.isNotEmpty()) {
+                Text(
+                    text = passwordError,
+                    color = Color(0xFFF83B3F),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 24.dp, top = 4.dp)
+                )
+            }
 
             // Terms and conditions
             Row(
