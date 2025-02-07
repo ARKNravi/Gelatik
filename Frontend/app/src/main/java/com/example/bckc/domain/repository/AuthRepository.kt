@@ -3,7 +3,7 @@ package com.example.bckc.domain.repository
 import com.example.bckc.utils.Resource
 
 interface AuthRepository {
-    suspend fun login(email: String, password: String): Resource<Boolean>
+    suspend fun login(email: String, password: String): Resource<String>
     suspend fun register(
         email: String,
         fullName: String,
@@ -11,5 +11,5 @@ interface AuthRepository {
         identityType: String,
         password: String,
         passwordConfirm: String
-    ): Resource<Boolean>
+    ): Resource<String>
 }

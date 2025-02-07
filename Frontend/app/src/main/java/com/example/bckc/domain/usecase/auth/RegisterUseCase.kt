@@ -14,7 +14,7 @@ class RegisterUseCase @Inject constructor(
         identityType: String,
         password: String,
         passwordConfirm: String
-    ): Resource<Boolean> {
+    ): Resource<String> {
         // Basic validation to ensure no empty fields
         if (email.isBlank() || fullName.isBlank() || birthDate.isBlank() || 
             identityType.isBlank() || password.isBlank() || passwordConfirm.isBlank()) {

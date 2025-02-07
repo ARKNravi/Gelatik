@@ -21,11 +21,11 @@ import com.example.bckc.utils.TokenManager
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    tokenManager: TokenManager
+    startDestination: String
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startDestination
     ) {
         composable(Screen.Login.route) {
             LoginScreen(navController)

@@ -19,11 +19,11 @@ class AuthViewModel @Inject constructor(
     private val preferenceManager: PreferenceManager
 ) : ViewModel() {
 
-    private val _loginState = MutableStateFlow<Resource<Boolean>?>(null)
-    val loginState: StateFlow<Resource<Boolean>?> = _loginState
+    private val _loginState = MutableStateFlow<Resource<String>?>(null)
+    val loginState: StateFlow<Resource<String>?> = _loginState
 
-    private val _registerState = MutableStateFlow<Resource<Boolean>?>(null)
-    val registerState: StateFlow<Resource<Boolean>?> = _registerState
+    private val _registerState = MutableStateFlow<Resource<String>?>(null)
+    val registerState: StateFlow<Resource<String>?> = _registerState
 
     // Registration form state
     private val _registrationData = MutableStateFlow(RegistrationData())
@@ -114,7 +114,7 @@ class AuthViewModel @Inject constructor(
             println("Sending to API: email=${registrationData.email}, name=${registrationData.fullName}, birth=$formattedDate, type=${registrationData.identityType}, pass=${registrationData.password}")
 
             _registerState.value = Resource.Loading()
-            _registerState.value = registerUseCase(
+            val result = registerUseCase(
                 email = registrationData.email,
                 fullName = registrationData.fullName,
                 birthDate = formattedDate,
@@ -123,18 +123,37 @@ class AuthViewModel @Inject constructor(
                 passwordConfirm = registrationData.passwordConfirm
             )
 
-            // Clear registration data after successful registration
-            if (_registerState.value is Resource.Success) {
-                preferenceManager.clearRegistrationData()
-                clearRegistrationData()
+            when (result) {
+                is Resource.Success -> {
+                    // Save token but don't use it yet
+                    result.data?.let { token ->
+                        preferenceManager.saveToken(token)
+                    }
+                    // Clear registration data after successful registration
+                    preferenceManager.clearRegistrationData()
+                    clearRegistrationData()
+                }
+                else -> {}
             }
+            _registerState.value = result
         }
     }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = Resource.Loading()
-            _loginState.value = loginUseCase(email, password)
+            val result = loginUseCase(email, password)
+            
+            when (result) {
+                is Resource.Success -> {
+                    // Save token but don't use it yet
+                    result.data?.let { token ->
+                        preferenceManager.saveToken(token)
+                    }
+                }
+                else -> {}
+            }
+            _loginState.value = result
         }
     }
 

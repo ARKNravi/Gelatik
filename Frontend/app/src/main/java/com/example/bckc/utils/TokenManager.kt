@@ -16,22 +16,29 @@ class TokenManager @Inject constructor(
 
     suspend fun validateToken(): Boolean {
         val token = preferenceManager.getToken()
+        
+        // If no token exists, return false immediately
         if (token == null) {
             _isTokenValid.value = false
             return false
         }
 
         return try {
+            // Try to get user profile with the stored token
             val response = apiService.getUserProfile()
             val isValid = response.isSuccessful
-            _isTokenValid.value = isValid
+            
             if (!isValid) {
+                // If token is invalid, clear it
                 preferenceManager.clearToken()
             }
+            
+            _isTokenValid.value = isValid
             isValid
         } catch (e: Exception) {
-            _isTokenValid.value = false
+            // If there's any error, clear token and return false
             preferenceManager.clearToken()
+            _isTokenValid.value = false
             false
         }
     }

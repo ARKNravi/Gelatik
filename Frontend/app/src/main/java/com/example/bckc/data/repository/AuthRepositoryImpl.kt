@@ -13,13 +13,12 @@ class AuthRepositoryImpl @Inject constructor(
     private val preferenceManager: PreferenceManager
 ) : AuthRepository {
     
-    override suspend fun login(email: String, password: String): Resource<Boolean> {
+    override suspend fun login(email: String, password: String): Resource<String> {
         return try {
             val response = apiService.login(LoginRequest(email, password))
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
-                    preferenceManager.saveToken(authResponse.access_token)
-                    return Resource.Success(true)
+                    Resource.Success(authResponse.access_token)
                 } ?: Resource.Error("Empty response body")
             } else {
                 Resource.Error("Login failed: ${response.message()}")
@@ -36,7 +35,7 @@ class AuthRepositoryImpl @Inject constructor(
         identityType: String,
         password: String,
         passwordConfirm: String
-    ): Resource<Boolean> {
+    ): Resource<String> {
         return try {
             val request = RegisterRequest(
                 email = email,
@@ -49,8 +48,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiService.register(request)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
-                    preferenceManager.saveToken(authResponse.access_token)
-                    return Resource.Success(true)
+                    Resource.Success(authResponse.access_token)
                 } ?: Resource.Error("Empty response body")
             } else {
                 Resource.Error("Registration failed: ${response.message()}")
