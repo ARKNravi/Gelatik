@@ -188,7 +188,7 @@ fun ProfileScreen(
 
                             // Edit Button
                             IconButton(
-                                onClick = { /* Handle edit */ },
+                                onClick = { navController.navigate(Screen.EditProfile.route) },
                                 modifier = Modifier
                                     .size(40.dp)
                                     .background(

@@ -5,9 +5,7 @@ import com.example.bckc.data.model.request.RegisterRequest
 import com.example.bckc.data.model.response.AuthResponse
 import com.example.bckc.data.model.response.UserResponse
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
     @POST("auth/login")
@@ -18,4 +16,24 @@ interface ApiService {
 
     @GET("users/profile")
     suspend fun getUserProfile(): Response<UserResponse>
+
+    @PUT("users/profile")
+    suspend fun updateUserProfile(
+        @Body request: Map<String, String>
+    ): Response<UserResponse>
+
+    suspend fun updateUserProfile(
+        fullName: String,
+        birthDate: String,
+        institution: String,
+        profilePictureUrl: String?
+    ): Response<UserResponse> {
+        val request = mutableMapOf(
+            "full_name" to fullName,
+            "birth_date" to birthDate,
+            "institution" to institution
+        )
+        profilePictureUrl?.let { request["profile_picture_url"] = it }
+        return updateUserProfile(request)
+    }
 }

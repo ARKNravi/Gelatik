@@ -16,7 +16,9 @@ import com.example.bckc.presentation.screens.forum.ForumScreen
 import com.example.bckc.presentation.screens.home.HomeScreen
 import com.example.bckc.presentation.screens.jbi.JBIScreen
 import com.example.bckc.presentation.screens.profile.ProfileScreen
+import com.example.bckc.presentation.screens.profile.EditProfileScreen
 import com.example.bckc.utils.TokenManager
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun NavGraph(
@@ -57,6 +59,13 @@ fun NavGraph(
         
         composable(Screen.Profile.route) {
             ProfileScreen(navController)
+        }
+        
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(
+                viewModel = hiltViewModel(),
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

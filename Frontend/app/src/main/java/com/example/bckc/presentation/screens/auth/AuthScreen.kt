@@ -104,12 +104,7 @@ fun AuthScreen(
                     text = "Masuk",
                     color = Color(0xFFFFFFFF),
                     fontSize = 16.sp
-                )            Box(
-                modifier = Modifier
-                    .width(textWidth)
-                    .height(2.dp)
-                    .background(Color(0xFF2171CF))
-            )
+                )
             }
 
             Column(
