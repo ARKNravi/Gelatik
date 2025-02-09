@@ -69,7 +69,6 @@ fun LoginScreen(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        StatusBar()
         
         Box(
             modifier = Modifier
@@ -216,31 +215,6 @@ fun LoginScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun StatusBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "9:41",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("📶", fontSize = 16.sp)  // Signal icon
-            Text("📡", fontSize = 16.sp)  // WiFi icon
-            Text("🔋", fontSize = 16.sp)  // Battery icon
         }
     }
 }
