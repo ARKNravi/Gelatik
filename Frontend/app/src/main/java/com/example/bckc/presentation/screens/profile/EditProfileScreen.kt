@@ -100,187 +100,206 @@ fun EditProfileScreen(
         handleBackPress()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Edit Profil",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFF1B1D28)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = handleBackPress,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color(0xFFE8F1FF), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color(0xFF1B1D28)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Profile Image
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        if (uiState.isLoading || uiState.fullName.isEmpty()) {
+            // Full screen loading
             Box(
-                modifier = Modifier
-                    .padding(vertical = 24.dp)
-                    .size(128.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = uiState.profilePictureUrl ?: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/STUDEAF_DESIGN__Copy-zOrlmwsOjlaa95s7ABRDnpvGVdbuQT.png",
-                    contentDescription = "Profile Picture",
+                CircularProgressIndicator(
+                    color = Color(0xFF2171CF),
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        } else {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "Edit Profil",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color(0xFF1B1D28)
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = handleBackPress,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color(0xFFE8F1FF), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Color(0xFF1B1D28)
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.White
+                        )
+                    )
+                }
+            ) { paddingValues ->
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(CircleShape)
-                        .border(4.dp, Color(0xFF2171CF), CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-                IconButton(
-                    onClick = { /* Handle edit photo */ },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .background(Color(0xFF2171CF), CircleShape)
-                        .size(40.dp)
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit photo",
-                        tint = Color.White
-                    )
-                }
-            }
-
-            // Form Fields
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Full Name
-                FormField(
-                    label = "Nama Lengkap",
-                    value = uiState.fullName,
-                    onValueChange = viewModel::updateFullName
-                )
-
-                // Birth Date
-                Column {
-                    Text(
-                        text = "Tanggal Lahir",
-                        color = Color(0xFF838383),
-                        fontSize = 14.sp
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Profile Image
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 24.dp)
+                            .size(128.dp)
                     ) {
-                        IconButton(
-                            onClick = { datePickerDialog.show() },
+                        AsyncImage(
+                            model = uiState.profilePictureUrl ?: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/STUDEAF_DESIGN__Copy-zOrlmwsOjlaa95s7ABRDnpvGVdbuQT.png",
+                            contentDescription = "Profile Picture",
                             modifier = Modifier
-                                .size(48.dp)
-                                .background(Color.White, RoundedCornerShape(8.dp))
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .border(4.dp, Color(0xFF2171CF), CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        IconButton(
+                            onClick = { /* Handle edit photo */ },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .background(Color(0xFF2171CF), CircleShape)
+                                .size(40.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.calendar),
-                                contentDescription = "Select date",
-                                tint = Color(0xFF838383),
-                                modifier = Modifier.size(20.dp)
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit photo",
+                                tint = Color.White
                             )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
-                            value = uiState.birthDate?.let { dateFormatter.format(it) } ?: "",
-                            onValueChange = { },
-                            enabled = false,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                disabledBorderColor = Color(0xFFE2E8F0),
-                                disabledTextColor = Color(0xFF1B1D28)
-                            )
-                        )
                     }
-                }
 
-                // Email
-                FormField(
-                    label = "Email",
-                    value = uiState.email,
-                    onValueChange = viewModel::updateEmail,
-                    enabled = false
-                )
-
-                // Identity Type
-                Column {
-                    Text(
-                        text = "Pilihan Identitas",
-                        color = Color(0xFF838383),
-                        fontSize = 14.sp
-                    )
-                    Row(
+                    // Form Fields
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        IdentityButton(
-                            text = "Tuli",
-                            selected = uiState.identityType == IdentityType.TULI,
-                            onClick = { viewModel.updateIdentityType(IdentityType.TULI) },
-                            modifier = Modifier.weight(1f)
+                        // Full Name
+                        FormField(
+                            label = "Nama Lengkap",
+                            value = uiState.fullName,
+                            onValueChange = viewModel::updateFullName
                         )
-                        IdentityButton(
-                            text = "Dengar",
-                            selected = uiState.identityType == IdentityType.DENGAR,
-                            onClick = { viewModel.updateIdentityType(IdentityType.DENGAR) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
 
-                // Institution
-                FormField(
-                    label = "Institusi / Lembaga",
-                    value = uiState.institution,
-                    onValueChange = viewModel::updateInstitution,
-                    placeholder = "Masukkan institusi / lembaga"
-                )
+                        // Birth Date
+                        Column {
+                            Text(
+                                text = "Tanggal Lahir",
+                                color = Color(0xFF838383),
+                                fontSize = 14.sp
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(
+                                    onClick = { datePickerDialog.show() },
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(Color.White, RoundedCornerShape(8.dp))
+                                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.calendar),
+                                        contentDescription = "Select date",
+                                        tint = Color(0xFF838383),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                OutlinedTextField(
+                                    value = uiState.birthDate?.let { dateFormatter.format(it) } ?: "",
+                                    onValueChange = { },
+                                    enabled = false,
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        disabledBorderColor = Color(0xFFE2E8F0),
+                                        disabledTextColor = Color(0xFF1B1D28)
+                                    )
+                                )
+                            }
+                        }
 
-                // Save Button
-                Button(
-                    onClick = { viewModel.saveChanges() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    enabled = uiState.isFormValid,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isFormValid) Color(0xFF2171CF) else Color(0xFFF5F5F5),
-                        contentColor = if (uiState.isFormValid) Color.White else Color(0xFF838383)
-                    )
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(24.dp)
+                        // Email
+                        FormField(
+                            label = "Email",
+                            value = uiState.email,
+                            onValueChange = viewModel::updateEmail,
+                            enabled = false
                         )
-                    } else {
-                        Text("Simpan Perubahan")
+
+                        // Identity Type
+                        Column {
+                            Text(
+                                text = "Pilihan Identitas",
+                                color = Color(0xFF838383),
+                                fontSize = 14.sp
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                IdentityButton(
+                                    text = "Tuli",
+                                    selected = uiState.identityType == IdentityType.TULI,
+                                    onClick = { viewModel.updateIdentityType(IdentityType.TULI) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IdentityButton(
+                                    text = "Dengar",
+                                    selected = uiState.identityType == IdentityType.DENGAR,
+                                    onClick = { viewModel.updateIdentityType(IdentityType.DENGAR) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        // Institution
+                        FormField(
+                            label = "Institusi / Lembaga",
+                            value = uiState.institution,
+                            onValueChange = viewModel::updateInstitution,
+                            placeholder = "Masukkan institusi / lembaga"
+                        )
+
+                        // Save Button
+                        Button(
+                            onClick = { viewModel.saveChanges() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            enabled = uiState.isFormValid,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (uiState.isFormValid) Color(0xFF2171CF) else Color(0xFFF5F5F5),
+                                contentColor = if (uiState.isFormValid) Color.White else Color(0xFF838383)
+                            )
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Text("Simpan Perubahan")
+                            }
+                        }
                     }
                 }
             }

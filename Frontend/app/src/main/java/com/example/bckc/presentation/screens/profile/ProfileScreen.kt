@@ -24,6 +24,7 @@ import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
 import androidx.hilt.navigation.compose.hiltViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -39,243 +40,328 @@ fun ProfileScreen(
     ) {
         Box(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
         ) {
-            // Background with curved bottom - starts from top
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(320.dp)  // Increased height to accommodate shifted content
-                    .offset(y = (-70).dp)  // Move kotak.png up by 30 units
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.kotak),
-                    contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Fixed Header Bar with Shadow - overlays kotak.png
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color.White.copy(alpha = 0.95f),  // Slightly transparent to show kotak.png
-                    shadowElevation = 4.dp,
-                ) {
-                    Row(
+            when (profileState) {
+                is Resource.Loading, null -> {
+                    // Full screen loading
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxSize()
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Profil Pengguna",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1B1D28)
+                        CircularProgressIndicator(
+                            color = Color(0xFF2171CF),
+                            modifier = Modifier.size(48.dp)
                         )
-                        IconButton(
-                            onClick = { /* Handle settings */ }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.settings),
-                                contentDescription = "Settings",
-                                tint = Color(0xFF1B1D28),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
                     }
                 }
-
-                // Profile Info - shifted down
-                Spacer(modifier = Modifier.height(24.dp))
-                when (profileState) {
-                    is Resource.Loading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(16.dp),
-                            color = Color(0xFF2171CF)
-                        )
-                    }
-                    is Resource.Success -> {
-                        val user = (profileState as Resource.Success).data
-                        Row(
+                is Resource.Success -> {
+                    // Main content
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Profile Picture
+                            // Background with curved bottom - starts from top
                             Box(
-                                modifier = Modifier.size(80.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(320.dp)
+                                    .offset(y = (-70).dp)
                             ) {
-                                if (user.profilePictureUrl != null) {
-                                    CoilImage(
-                                        imageModel = { user.profilePictureUrl },
-                                        imageOptions = ImageOptions(
-                                            contentScale = ContentScale.Crop,
-                                            alignment = Alignment.Center
-                                        ),
-                                        modifier = Modifier
-                                            .size(80.dp)
-                                            .clip(CircleShape)
-                                            .border(
-                                                width = 3.dp,
-                                                color = Color(0xFF2171CF),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                } else {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.avatar1),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(80.dp)
-                                            .clip(CircleShape)
-                                            .border(
-                                                width = 3.dp,
-                                                color = Color(0xFF2171CF),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                }
+                                Image(
+                                    painter = painterResource(id = R.drawable.kotak),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.FillBounds,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
 
                             Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = user.fullName,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1B1D28)
-                                )
-                                Text(
-                                    text = user.email,
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF1B1D28)
-                                )
-                                Text(
-                                    text = user.birthDate.replace("-", "/"),
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF1B1D28)
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            color = Color(0xFF2171CF).copy(alpha = 0.1f),
-                                            shape = RoundedCornerShape(4.dp)
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                // Fixed Header Bar with Shadow
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    color = Color.White.copy(alpha = 0.95f),
+                                    shadowElevation = 4.dp,
                                 ) {
-                                    Text(
-                                        text = "Teman ${user.identityType.replaceFirstChar { it.uppercase() }}",
-                                        fontSize = 12.sp,
-                                        color = Color(0xFF2171CF),
-                                        fontWeight = FontWeight.Medium
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Profil Pengguna",
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1B1D28)
+                                        )
+                                        IconButton(
+                                            onClick = { /* Handle settings */ }
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.settings),
+                                                contentDescription = "Settings",
+                                                tint = Color(0xFF1B1D28),
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Profile Info
+                                Spacer(modifier = Modifier.height(24.dp))
+                                val user = (profileState as Resource.Success).data
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Profile Picture
+                                    Box(
+                                        modifier = Modifier.size(80.dp)
+                                    ) {
+                                        if (user.profilePictureUrl != null) {
+                                            CoilImage(
+                                                imageModel = { user.profilePictureUrl },
+                                                imageOptions = ImageOptions(
+                                                    contentScale = ContentScale.Crop,
+                                                    alignment = Alignment.Center
+                                                ),
+                                                modifier = Modifier
+                                                    .size(80.dp)
+                                                    .clip(CircleShape)
+                                                    .border(
+                                                        width = 3.dp,
+                                                        color = Color(0xFF2171CF),
+                                                        shape = CircleShape
+                                                    )
+                                            )
+                                        } else {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.avatar1),
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier
+                                                    .size(80.dp)
+                                                    .clip(CircleShape)
+                                                    .border(
+                                                        width = 3.dp,
+                                                        color = Color(0xFF2171CF),
+                                                        shape = CircleShape
+                                                    )
+                                            )
+                                        }
+                                    }
+
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(start = 16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = user.fullName,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1B1D28)
+                                        )
+                                        Text(
+                                            text = user.email,
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF1B1D28)
+                                        )
+                                        Text(
+                                            text = user.birthDate.replace("-", "/"),
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF1B1D28)
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    color = Color(0xFF2171CF).copy(alpha = 0.1f),
+                                                    shape = RoundedCornerShape(4.dp)
+                                                )
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = "Teman ${user.identityType.replaceFirstChar { it.uppercase() }}",
+                                                fontSize = 12.sp,
+                                                color = Color(0xFF2171CF),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
+
+                                    // Edit Button
+                                    IconButton(
+                                        onClick = { navController.navigate(Screen.EditProfile.route) },
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(
+                                                color = Color(0xFF2171CF),
+                                                shape = CircleShape
+                                            )
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.edit),
+                                            contentDescription = "Edit",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+
+                                // Tabs section
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 40.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 24.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        TabItem("Cerita Anda", selectedTab == 0) { selectedTab = 0 }
+                                        TabItem("Tersimpan", selectedTab == 1) { selectedTab = 1 }
+                                        TabItem("Tandai", selectedTab == 2) { selectedTab = 2 }
+                                    }
+                                    // Full-width gray line
+                                    Divider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = Color(0xFFEEEEEE),
+                                        thickness = 2.dp
                                     )
                                 }
                             }
+                        }
 
-                            // Edit Button
-                            IconButton(
-                                onClick = { navController.navigate(Screen.EditProfile.route) },
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .background(
-                                        color = Color(0xFF2171CF),
-                                        shape = CircleShape
-                                    )
+                        // Content Area
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .background(Color.White)
+                        ) {
+                            when (profileState) {
+                                is Resource.Loading, null -> {
+                                    // Show loading indicator
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            color = Color(0xFF2171CF),
+                                            modifier = Modifier.size(48.dp)
+                                        )
+                                    }
+                                }
+                                is Resource.Success -> {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(24.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.bookmark),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(80.dp),
+                                            colorFilter = ColorFilter.tint(Color(0xFFCEDCF8))
+                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                        Text(
+                                            text = when (selectedTab) {
+                                                0 -> "Belum ada cerita yang dibuat."
+                                                1 -> "Belum ada cerita yang disimpan."
+                                                else -> "Belum ada cerita yang ditandai."
+                                            },
+                                            color = Color(0xFF8C8C8C),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                                is Resource.Error -> {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(24.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = (profileState as Resource.Error).message ?: "Terjadi kesalahan",
+                                            color = Color(0xFF1B1D28),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.padding(horizontal = 32.dp)
+                                        )
+                                        TextButton(
+                                            onClick = { viewModel.fetchUserProfile() },
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = "Coba Lagi",
+                                                color = Color(0xFF2171CF),
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    // Full screen error state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = (profileState as Resource.Error).message ?: "Terjadi kesalahan",
+                                color = Color(0xFF1B1D28),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 32.dp)
+                            )
+                            TextButton(
+                                onClick = { viewModel.fetchUserProfile() },
+                                modifier = Modifier.padding(top = 8.dp)
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.edit),
-                                    contentDescription = "Edit",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
+                                Text(
+                                    text = "Coba Lagi",
+                                    color = Color(0xFF2171CF),
+                                    fontSize = 14.sp
                                 )
                             }
                         }
                     }
-                    is Resource.Error -> {
-                        Text(
-                            text = (profileState as Resource.Error).message ?: "Error",
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                    null -> {}
-                }
-
-                // Tabs with full-width divider - shifted down
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 40.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TabItem("Cerita Anda", selectedTab == 0) { selectedTab = 0 }
-                        TabItem("Tersimpan", selectedTab == 1) { selectedTab = 1 }
-                        TabItem("Tandai", selectedTab == 2) { selectedTab = 2 }
-                    }
-                    // Full-width gray line
-                    Divider(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFEEEEEE),
-                        thickness = 2.dp
-                    )
                 }
             }
         }
 
-        // Content Area
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(Color.White)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.bookmark),
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    colorFilter = ColorFilter.tint(Color(0xFFCEDCF8))
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = when (selectedTab) {
-                        0 -> "Belum ada cerita yang dibuat."
-                        1 -> "Belum ada cerita yang disimpan."
-                        else -> "Belum ada cerita yang ditandai."
-                    },
-                    color = Color(0xFF8C8C8C),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        // Navigation Bar
+        // Navigation Bar (always visible)
         NavigationBar(
             navController = navController,
             currentRoute = Screen.Profile.route
