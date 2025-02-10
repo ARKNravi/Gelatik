@@ -22,15 +22,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.activity.compose.BackHandler
 import coil.compose.AsyncImage
 import com.example.bckc.R
 import com.example.bckc.presentation.screens.profile.viewmodel.EditProfileViewModel
 import com.example.bckc.presentation.screens.profile.viewmodel.IdentityType
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +44,7 @@ fun EditProfileScreen(
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val context = LocalContext.current
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
 
     // Date Picker setup
     val calendar = Calendar.getInstance()
@@ -76,6 +79,27 @@ fun EditProfileScreen(
         )
     }
 
+    if (showConfirmationDialog) {
+        ConfirmationDialog(
+            onDismiss = { showConfirmationDialog = false },
+            onConfirm = onNavigateBack
+        )
+    }
+
+    val handleBackPress = {
+        println("Back pressed. Has unsaved changes: ${uiState.hasUnsavedChanges}")
+        if (uiState.hasUnsavedChanges) {
+            showConfirmationDialog = true
+        } else {
+            onNavigateBack()
+        }
+    }
+
+    // Handle system back button
+    BackHandler {
+        handleBackPress()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,7 +113,7 @@ fun EditProfileScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = onNavigateBack,
+                        onClick = handleBackPress,
                         modifier = Modifier
                             .size(40.dp)
                             .background(Color(0xFFE8F1FF), CircleShape)
@@ -367,6 +391,92 @@ fun SuccessDialog(
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfirmationDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Dialog(
+        onDismissRequest = onDismiss
+    ) {
+        Surface(
+            modifier = modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(28.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Title
+                Text(
+                    text = "Apakah Anda yakin ingin membatalkan perubahan?",
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 32.dp, bottom = 32.dp),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF1B1D28)
+                )
+
+                Divider(
+                    color = Color(0xFFE2E8F0),
+                    thickness = 1.dp
+                )
+
+                // Buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    // No Button
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "Tidak",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFDC2626) // Red color
+                        )
+                    }
+
+                    // Vertical Divider
+                    Divider(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight(),
+                        color = Color(0xFFE2E8F0)
+                    )
+
+                    // Yes Button
+                    TextButton(
+                        onClick = onConfirm,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "Ya",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF2171CF) // Blue color
+                        )
+                    }
                 }
             }
         }

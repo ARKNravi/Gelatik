@@ -52,6 +52,43 @@ class PreferenceManager @Inject constructor(context: Context) {
             .apply()
     }
 
+    // Profile data methods
+    fun saveProfileData(
+        fullName: String,
+        birthDate: String,
+        identityType: String,
+        institution: String,
+        profilePictureUrl: String?
+    ) {
+        prefs.edit()
+            .putString(KEY_PROFILE_FULLNAME, fullName)
+            .putString(KEY_PROFILE_BIRTHDATE, birthDate)
+            .putString(KEY_PROFILE_IDENTITY_TYPE, identityType)
+            .putString(KEY_PROFILE_INSTITUTION, institution)
+            .putString(KEY_PROFILE_PICTURE_URL, profilePictureUrl)
+            .apply()
+    }
+
+    fun getProfileData(): Map<String, String?> {
+        return mapOf(
+            "fullName" to prefs.getString(KEY_PROFILE_FULLNAME, ""),
+            "birthDate" to prefs.getString(KEY_PROFILE_BIRTHDATE, ""),
+            "identityType" to prefs.getString(KEY_PROFILE_IDENTITY_TYPE, ""),
+            "institution" to prefs.getString(KEY_PROFILE_INSTITUTION, ""),
+            "profilePictureUrl" to prefs.getString(KEY_PROFILE_PICTURE_URL, null)
+        )
+    }
+
+    fun clearProfileData() {
+        prefs.edit()
+            .remove(KEY_PROFILE_FULLNAME)
+            .remove(KEY_PROFILE_BIRTHDATE)
+            .remove(KEY_PROFILE_IDENTITY_TYPE)
+            .remove(KEY_PROFILE_INSTITUTION)
+            .remove(KEY_PROFILE_PICTURE_URL)
+            .apply()
+    }
+
     companion object {
         private const val PREF_NAME = "StuDeafPrefs"
         private const val KEY_TOKEN = "token"
@@ -59,5 +96,10 @@ class PreferenceManager @Inject constructor(context: Context) {
         private const val KEY_REG_FULLNAME = "reg_fullname"
         private const val KEY_REG_BIRTHDATE = "reg_birthdate"
         private const val KEY_REG_IDENTITY = "reg_identity"
+        private const val KEY_PROFILE_FULLNAME = "profile_fullname"
+        private const val KEY_PROFILE_BIRTHDATE = "profile_birthdate"
+        private const val KEY_PROFILE_IDENTITY_TYPE = "profile_identity_type"
+        private const val KEY_PROFILE_INSTITUTION = "profile_institution"
+        private const val KEY_PROFILE_PICTURE_URL = "profile_picture_url"
     }
 }
