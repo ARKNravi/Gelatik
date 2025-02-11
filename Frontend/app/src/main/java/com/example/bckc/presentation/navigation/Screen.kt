@@ -15,4 +15,7 @@ sealed class Screen(val route: String) {
     object JBI : Screen("jbi")
     object Profile : Screen("profile")
     object EditProfile : Screen("edit_profile")
+    object Settings : Screen("settings")
+    object Terms : Screen("terms")
+    object About : Screen("about")
 }

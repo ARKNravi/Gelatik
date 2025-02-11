@@ -15,8 +15,8 @@ import com.example.bckc.presentation.screens.auth.AuthScreen
 import com.example.bckc.presentation.screens.forum.ForumScreen
 import com.example.bckc.presentation.screens.home.HomeScreen
 import com.example.bckc.presentation.screens.jbi.JBIScreen
-import com.example.bckc.presentation.screens.profile.ProfileScreen
-import com.example.bckc.presentation.screens.profile.EditProfileScreen
+import com.example.bckc.presentation.screens.profile.*
+import com.example.bckc.presentation.screens.profile.viewmodel.ProfileViewModel
 import com.example.bckc.utils.TokenManager
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -65,6 +65,26 @@ fun NavGraph(
             EditProfileScreen(
                 viewModel = hiltViewModel(),
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            val profileViewModel = hiltViewModel<ProfileViewModel>()
+            SettingsScreen(
+                navController = navController,
+                tokenManager = profileViewModel.tokenManager
+            )
+        }
+
+        composable(Screen.Terms.route) {
+            TermsOfServiceScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.About.route) {
+            AboutAppScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

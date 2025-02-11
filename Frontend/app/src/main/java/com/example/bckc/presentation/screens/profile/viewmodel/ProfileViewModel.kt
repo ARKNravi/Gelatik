@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bckc.domain.model.User
 import com.example.bckc.utils.Resource
 import com.example.bckc.data.api.ApiService
+import com.example.bckc.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    val tokenManager: TokenManager
 ) : ViewModel() {
     private val _profileState = MutableStateFlow<Resource<User>?>(null)
     val profileState: StateFlow<Resource<User>?> = _profileState

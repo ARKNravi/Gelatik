@@ -105,7 +105,7 @@ fun ProfileScreen(
                                             color = Color(0xFF1B1D28)
                                         )
                                         IconButton(
-                                            onClick = { /* Handle settings */ }
+                                            onClick = { navController.navigate(Screen.Settings.route) }
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.settings),
