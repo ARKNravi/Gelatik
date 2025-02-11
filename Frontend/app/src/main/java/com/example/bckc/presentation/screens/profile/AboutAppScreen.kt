@@ -67,10 +67,11 @@ fun AboutAppScreen(
         ) {
             // Logo
             Image(
-                painter = painterResource(id = R.drawable.settings),
+                painter = painterResource(id = R.drawable.studeaf_logo),
                 contentDescription = "STUDEAF Logo",
                 modifier = Modifier
-                    .width(200.dp)
+                    .width(216.dp)
+                    .height(100.dp)
                     .padding(vertical = 24.dp)
             )
 
