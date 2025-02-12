@@ -33,7 +33,7 @@ class UserRepository:
         return user
 
     def verify_password(self, user: User, current_password: str) -> bool:
-        if not verify_password(current_password, user.password):
+        if not verify_password(current_password, user.hashed_password):
             raise InvalidPasswordError()
         return True
 
@@ -66,7 +66,7 @@ class UserRepository:
 
     def delete_user(self, user: User, password: str) -> bool:
         """Delete a user after verifying their password"""
-        if not verify_password(password, user.password):
+        if not verify_password(password, user.hashed_password):
             raise InvalidPasswordError()
             
         self.db.delete(user)
