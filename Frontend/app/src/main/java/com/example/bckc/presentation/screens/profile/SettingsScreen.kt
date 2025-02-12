@@ -29,7 +29,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    tokenManager: TokenManager
+    tokenManager: TokenManager,
+    onNavigate: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -86,7 +87,7 @@ fun SettingsScreen(
                         icon = R.drawable.settings,
                         title = "Keamanan",
                         subtitle = "Ubah kata sandi untuk keamanan akun",
-                        onClick = { /* TODO: Implement security settings */ }
+                        onClick = { onNavigate(Screen.SecurityCheck.route) }
                     ),
                     SettingsItem(
                         icon = R.drawable.settings,
@@ -247,4 +248,4 @@ private data class SettingsItem(
     val title: String,
     val subtitle: String,
     val onClick: () -> Unit
-) 
+)

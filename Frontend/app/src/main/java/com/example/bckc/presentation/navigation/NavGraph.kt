@@ -72,7 +72,8 @@ fun NavGraph(
             val profileViewModel = hiltViewModel<ProfileViewModel>()
             SettingsScreen(
                 navController = navController,
-                tokenManager = profileViewModel.tokenManager
+                tokenManager = profileViewModel.tokenManager,
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
 
@@ -85,6 +86,23 @@ fun NavGraph(
         composable(Screen.About.route) {
             AboutAppScreen(
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.SecurityCheck.route) {
+            SecurityScreen(
+                onBackClick = { navController.popBackStack() },
+                onForgotPasswordClick = { /* TODO: Implement forgot password */ },
+                onContinueClick = { navController.navigate(Screen.ChangePassword.route) }
+            )
+        }
+
+        composable(Screen.ChangePassword.route) {
+            ChangePasswordScreen(
+                onBackClick = { navController.popBackStack() },
+                onSaveClick = { _, _ -> 
+                    navController.popBackStack(Screen.Settings.route, false)
+                }
             )
         }
     }

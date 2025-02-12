@@ -2,8 +2,12 @@ package com.example.bckc.data.api
 
 import com.example.bckc.data.model.request.LoginRequest
 import com.example.bckc.data.model.request.RegisterRequest
+import com.example.bckc.data.model.request.VerifyPasswordRequest
+import com.example.bckc.data.model.request.ChangePasswordRequest
 import com.example.bckc.data.model.response.AuthResponse
 import com.example.bckc.data.model.response.UserResponse
+import com.example.bckc.data.model.response.VerifyPasswordResponse
+import com.example.bckc.data.model.response.ChangePasswordResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -36,4 +40,14 @@ interface ApiService {
         profilePictureUrl?.let { request["profile_picture_url"] = it }
         return updateUserProfile(request)
     }
+
+    @POST("users/verify-password")
+    suspend fun verifyPassword(
+        @Body request: VerifyPasswordRequest
+    ): VerifyPasswordResponse
+
+    @POST("users/change-password")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequest
+    ): ChangePasswordResponse
 }
