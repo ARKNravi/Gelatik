@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bckc.domain.repository.UserRepository
+import com.example.bckc.utils.PreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SecurityViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val preferenceManager: PreferenceManager
 ) : ViewModel() {
     var verificationToken by mutableStateOf<String?>(null)
         private set
@@ -36,6 +38,7 @@ class SecurityViewModel @Inject constructor(
             SecurityEvent.ResetState -> {
                 state = SecurityState()
                 verificationToken = null
+                preferenceManager.clearVerificationToken()
             }
         }
     }
@@ -46,6 +49,7 @@ class SecurityViewModel @Inject constructor(
             userRepository.verifyPassword(currentPassword)
                 .onSuccess { token ->
                     verificationToken = token
+                    preferenceManager.saveVerificationToken(token)
                     _uiEvent.emit(SecurityUiEvent.NavigateToChangePassword)
                 }
                 .onFailure { e ->
@@ -70,19 +74,26 @@ class SecurityViewModel @Inject constructor(
             return
         }
 
-        verificationToken?.let { token ->
+        val token = preferenceManager.getVerificationToken()
+        if (token == null) {
             viewModelScope.launch {
-                state = state.copy(isLoading = true)
-                userRepository.changePassword(token, newPassword, confirmPassword)
-                    .onSuccess { message ->
-                        _uiEvent.emit(SecurityUiEvent.PasswordChanged(message))
-                        _uiEvent.emit(SecurityUiEvent.NavigateBack)
-                    }
-                    .onFailure { e ->
-                        _uiEvent.emit(SecurityUiEvent.ShowError(e.message ?: "Unknown error occurred"))
-                    }
-                state = state.copy(isLoading = false)
+                _uiEvent.emit(SecurityUiEvent.ShowError("Verification token not found"))
             }
+            return
+        }
+
+        viewModelScope.launch {
+            state = state.copy(isLoading = true)
+            userRepository.changePassword(token, newPassword, confirmPassword)
+                .onSuccess { message ->
+                    preferenceManager.clearVerificationToken()
+                    _uiEvent.emit(SecurityUiEvent.PasswordChanged(message))
+                    _uiEvent.emit(SecurityUiEvent.NavigateToProfile)
+                }
+                .onFailure { e ->
+                    _uiEvent.emit(SecurityUiEvent.ShowError(e.message ?: "Unknown error occurred"))
+                }
+            state = state.copy(isLoading = false)
         }
     }
 
@@ -110,4 +121,5 @@ sealed class SecurityUiEvent {
     data class PasswordChanged(val message: String) : SecurityUiEvent()
     object NavigateToChangePassword : SecurityUiEvent()
     object NavigateBack : SecurityUiEvent()
+    object NavigateToProfile : SecurityUiEvent()
 }

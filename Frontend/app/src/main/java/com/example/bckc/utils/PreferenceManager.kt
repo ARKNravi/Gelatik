@@ -89,6 +89,18 @@ class PreferenceManager @Inject constructor(context: Context) {
             .apply()
     }
 
+    fun saveVerificationToken(token: String) {
+        prefs.edit().putString(KEY_VERIFICATION_TOKEN, token).apply()
+    }
+
+    fun getVerificationToken(): String? {
+        return prefs.getString(KEY_VERIFICATION_TOKEN, null)
+    }
+
+    fun clearVerificationToken() {
+        prefs.edit().remove(KEY_VERIFICATION_TOKEN).apply()
+    }
+
     companion object {
         private const val PREF_NAME = "StuDeafPrefs"
         private const val KEY_TOKEN = "token"
@@ -101,5 +113,6 @@ class PreferenceManager @Inject constructor(context: Context) {
         private const val KEY_PROFILE_IDENTITY_TYPE = "profile_identity_type"
         private const val KEY_PROFILE_INSTITUTION = "profile_institution"
         private const val KEY_PROFILE_PICTURE_URL = "profile_picture_url"
+        private const val KEY_VERIFICATION_TOKEN = "verification_token"
     }
 }

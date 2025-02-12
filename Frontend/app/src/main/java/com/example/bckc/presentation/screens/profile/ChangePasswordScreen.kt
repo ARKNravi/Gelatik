@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun ChangePasswordScreen(
     onBackClick: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onSaveClick: (String, String) -> Unit,
     viewModel: SecurityViewModel = hiltViewModel()
 ) {
@@ -50,6 +51,7 @@ fun ChangePasswordScreen(
             when (event) {
                 is SecurityUiEvent.ShowError -> showError = event.message
                 is SecurityUiEvent.NavigateBack -> onBackClick()
+                is SecurityUiEvent.NavigateToProfile -> onNavigateToProfile()
                 else -> {}
             }
         }

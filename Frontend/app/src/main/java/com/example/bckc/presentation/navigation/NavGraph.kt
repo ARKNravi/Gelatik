@@ -100,8 +100,13 @@ fun NavGraph(
         composable(Screen.ChangePassword.route) {
             ChangePasswordScreen(
                 onBackClick = { navController.popBackStack() },
-                onSaveClick = { _, _ -> 
-                    navController.popBackStack(Screen.Settings.route, false)
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route) {
+                        popUpTo(Screen.Profile.route) { inclusive = true }
+                    }
+                },
+                onSaveClick = { newPassword, confirmPassword ->
+                    // Handle save click if needed
                 }
             )
         }
