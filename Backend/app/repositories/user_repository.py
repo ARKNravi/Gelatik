@@ -59,7 +59,7 @@ class UserRepository:
         self.invalidate_token(verification_token)
 
         # Change the password
-        user.password = get_password_hash(new_password)
+        user.hashed_password = get_password_hash(new_password)
         self.db.commit()
         self.db.refresh(user)
         return user
