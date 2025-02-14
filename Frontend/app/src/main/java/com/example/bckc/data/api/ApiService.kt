@@ -8,6 +8,7 @@ import com.example.bckc.data.model.response.AuthResponse
 import com.example.bckc.data.model.response.UserResponse
 import com.example.bckc.data.model.response.VerifyPasswordResponse
 import com.example.bckc.data.model.response.ChangePasswordResponse
+import com.example.bckc.data.model.response.TranslatorListResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -50,4 +51,7 @@ interface ApiService {
     suspend fun changePassword(
         @Body request: ChangePasswordRequest
     ): ChangePasswordResponse
+
+    @GET("translations")
+    suspend fun getTranslators(): Response<TranslatorListResponse>
 }
