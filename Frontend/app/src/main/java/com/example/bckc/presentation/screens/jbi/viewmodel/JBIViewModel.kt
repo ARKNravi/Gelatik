@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bckc.data.api.ApiService
+import com.example.bckc.data.model.response.TranslationOrderResponse
 import com.example.bckc.data.model.response.TranslatorResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,9 @@ class JBIViewModel @Inject constructor(
     private val _translators = MutableStateFlow<List<TranslatorResponse>>(emptyList())
     val translators: StateFlow<List<TranslatorResponse>> = _translators.asStateFlow()
 
+    private val _translationOrders = MutableStateFlow<List<TranslationOrderResponse>>(emptyList())
+    val translationOrders: StateFlow<List<TranslationOrderResponse>> = _translationOrders.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -35,10 +39,14 @@ class JBIViewModel @Inject constructor(
 
     init {
         fetchTranslators()
+        fetchTranslationOrders()
     }
 
     fun onTabSelected(index: Int) {
         _selectedTab.value = index
+        if (index == 1 && translationOrders.value.isEmpty()) {
+            fetchTranslationOrders()
+        }
     }
 
     fun onSearchQueryChange(query: String) {
@@ -76,5 +84,34 @@ class JBIViewModel @Inject constructor(
                 _isLoading.value = false
             }
         }
+    }
+
+    private fun fetchTranslationOrders() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val response = apiService.getMyTranslationOrders()
+                if (response.isSuccessful) {
+                    response.body()?.let { orderList ->
+                        _translationOrders.value = orderList.items
+                    }
+                } else {
+                    _error.value = "Failed to fetch translation orders"
+                }
+            } catch (e: Exception) {
+                _error.value = e.message ?: "An error occurred"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun onContactTranslator(orderId: Int) {
+        // TODO: Implement contact functionality
+    }
+
+    fun onCompleteOrder(orderId: Int) {
+        // TODO: Implement order completion
     }
 }

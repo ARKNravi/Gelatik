@@ -1,5 +1,6 @@
 package com.example.bckc.presentation.screens.jbi
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,8 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.bckc.R
+import com.example.bckc.data.model.response.TranslationOrderResponse
 import com.example.bckc.data.model.response.TranslatorResponse
 import com.example.bckc.presentation.components.NavigationBar
 import com.example.bckc.presentation.navigation.Screen
@@ -186,18 +188,62 @@ fun JBIScreen(
                     }
                 }
                 1 -> {
-                    // History Tab
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No riwayat available",
-                            fontSize = 16.sp,
-                            color = Color(0xFF8C8C8C),
-                            textAlign = TextAlign.Center
-                        )
+                    @Composable
+                    fun HistoryContent() {
+                        when {
+                            viewModel.isLoading.collectAsState().value -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color(0xFF2171CF))
+                                }
+                            }
+                            viewModel.error.collectAsState().value != null -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = viewModel.error.collectAsState().value ?: "An error occurred",
+                                        color = Color.Red
+                                    )
+                                }
+                            }
+                            viewModel.translationOrders.collectAsState().value.isEmpty() -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No riwayat available",
+                                        fontSize = 16.sp,
+                                        color = Color(0xFF8C8C8C),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                            else -> {
+                                val orders = viewModel.translationOrders.collectAsState().value
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 24.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    contentPadding = PaddingValues(vertical = 16.dp)
+                                ) {
+                                    items(orders) { order ->
+                                        TranslationOrderCard(
+                                            order = order,
+                                            onContactClick = { viewModel.onContactTranslator(order.id) },
+                                            onCompleteClick = { viewModel.onCompleteOrder(order.id) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
+                    HistoryContent()
                 }
             }
         }
@@ -367,6 +413,176 @@ private fun TranslatorCard(
                     tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TranslationOrderCard(
+    order: TranslationOrderResponse,
+    onContactClick: () -> Unit,
+    onCompleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        ) {
+            // Avatar and info
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Avatar with badge
+                Box(
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    AsyncImage(
+                        model = order.translator.profilePic?.takeIf { it.isNotEmpty() }
+                            ?: R.drawable.ic_profile,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE8F1FF)),
+                        contentScale = ContentScale.Crop
+                    )
+                    if (order.translator.availability) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.reward),
+                            contentDescription = null,
+                            tint = Color(0xFFFFB74D),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .offset(x = 4.dp, y = 6.dp)
+                                .align(Alignment.BottomEnd)
+                        )
+                    }
+                }
+
+                // Name and details
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = order.translator.name,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1B1D28)
+                        )
+
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color(0xFFE6FFF6)
+                        ) {
+                            Text(
+                                text = "Approved",
+                                color = Color(0xFF00D589),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+
+                    // Address
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.location),
+                            contentDescription = null,
+                            tint = Color(0xFF8C8C8C),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = order.translator.alamat,
+                            fontSize = 14.sp,
+                            color = Color(0xFF8C8C8C)
+                        )
+                    }
+
+                    // Schedule
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.alarm),
+                            contentDescription = null,
+                            tint = Color(0xFF8C8C8C),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = order.timeSlot,
+                            fontSize = 14.sp,
+                            color = Color(0xFF8C8C8C)
+                        )
+                    }
+                }
+            }
+
+            // Buttons in separate row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Contact Button
+                Button(
+                    onClick = onContactClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2171CF)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.phone),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Hubungi JBI",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                // Complete Order Button
+                OutlinedButton(
+                    onClick = onCompleteClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF2171CF)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF2171CF)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Pesanan Selesai",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
