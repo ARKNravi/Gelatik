@@ -29,7 +29,7 @@ class TranslatorBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     alamat: str = Field(..., min_length=1, max_length=255)
     availability: bool = True
-    profile_pic: Optional[HttpUrl] = None
+    profile_pic: Optional[str] = Field(None, max_length=500)
 
 class TranslatorCreate(TranslatorBase):
     pass
