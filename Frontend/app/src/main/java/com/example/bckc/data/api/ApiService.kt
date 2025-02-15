@@ -10,6 +10,8 @@ import com.example.bckc.data.model.response.VerifyPasswordResponse
 import com.example.bckc.data.model.response.ChangePasswordResponse
 import com.example.bckc.data.model.response.TranslatorListResponse
 import com.example.bckc.data.model.response.TranslationOrderListResponse
+import com.example.bckc.data.model.response.ForumListResponse
+import com.example.bckc.data.model.response.ForumResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -58,4 +60,7 @@ interface ApiService {
 
     @GET("translations/orders/my-orders")
     suspend fun getMyTranslationOrders(): Response<TranslationOrderListResponse>
+
+    @GET("summaries")
+    suspend fun getSummaries(): Response<List<ForumResponse>>
 }
